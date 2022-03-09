@@ -2,7 +2,7 @@ using RiptideNetworking;
 using Unity;
 using UnityEngine;
 
-public static class NewBehaviourScript
+public static class PlayerHandler
 {
     
     [MessageHandler((ushort)ServerToClientId.spawnPlayer)]

@@ -12,7 +12,9 @@ public enum ServerToClientId : ushort
 {
     spawnPlayer = 1,
     yourPlayerId,
-    playerPosition
+    playerPosition,
+    chunk,
+    playerInventory
 }
 public class NetworkManager : MonoBehaviour
 {

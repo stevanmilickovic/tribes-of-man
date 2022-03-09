@@ -9,6 +9,7 @@ public class Player : MonoBehaviour
     public int id;
     public ushort currectClientId;
     public string playerName;
+    public Inventory inventory;
 
     public Player(int _id, ushort _currectClientId, string _playerName)
     {

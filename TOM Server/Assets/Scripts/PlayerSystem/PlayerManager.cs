@@ -29,13 +29,14 @@ public class PlayerManager : MonoBehaviour
     private void Awake()
     {
         Singleton = this;
+        playersById = new Dictionary<int, Player>();
+        playersByName = new Dictionary<string, Player>();
+        playersByClientId = new Dictionary<ushort, Player>();
     }
 
     private void Start()
     {
-        playersById = new Dictionary<int, Player>();
-        playersByName = new Dictionary<string, Player>();
-        playersByClientId = new Dictionary<ushort, Player>();
+
     }
 
     private void FixedUpdate()
@@ -50,8 +51,10 @@ public class PlayerManager : MonoBehaviour
             UpdatePlayer(playersByName[name], clientId);
             SendYourIdMessage(playersByName[name], clientId);
             SpawnAllPlayers(clientId);
+            SendInventoryMessage(playersByName[name], clientId);
         }
         else { SpawnNewPlayer(clientId, name); }
+        MapManager.Singleton.SendAllChunks(clientId);
     }
 
     public void PlayerLeft(ushort clientId)
@@ -74,6 +77,7 @@ public class PlayerManager : MonoBehaviour
 
         SendYourIdMessage(newPlayerScript, clientId);
         SendSpawnPlayerMessageToAll(newPlayerScript);
+        SendInventoryMessage(newPlayerScript, clientId);
     }
 
     private Player SetNewPlayerScript(GameObject newPlayer, ushort clientId, string username)
@@ -82,7 +86,18 @@ public class PlayerManager : MonoBehaviour
         newPlayerScript.currectClientId = clientId;
         newPlayerScript.name = username;
         newPlayerScript.id = playersById.Count;
+        newPlayerScript.inventory = new Inventory(newPlayerScript.id, 9);
+
+        newPlayerScript.inventory.Test();
+
         return newPlayerScript;
+    }
+
+    private void SendInventoryMessage(Player player, ushort clientId)
+    {
+        Message message = Message.Create(MessageSendMode.reliable, ServerToClientId.playerInventory);
+        MessageExtentions.Add(message, player.inventory);
+        NetworkManager.Singleton.Server.Send(message, clientId);
     }
 
     private void SendYourIdMessage(Player player, ushort clientId)

@@ -24,7 +24,7 @@ public class PlayerManager : MonoBehaviour
 
     [SerializeField] private GameObject playerPrefab;
     [SerializeField] private GameObject myPlayerPrefab;
-    private Player myPlayer;
+    private MyPlayer myPlayer;
     private Dictionary<int, Player> players;
     private int myId = -1;
     private bool[] inputs = new bool[4];
@@ -72,9 +72,20 @@ public class PlayerManager : MonoBehaviour
 
     private Player SetPlayerScript(GameObject newPlayer, int id, string username)
     {
+        if (id == myId)
+            return SetMyPlayerScript(newPlayer, id, username);
         Player newPlayerScript = newPlayer.AddComponent<Player>();
         newPlayerScript.username = username;
         newPlayerScript.id = id;
+        return newPlayerScript;
+    }
+
+    private Player SetMyPlayerScript(GameObject newPlayer, int id, string username)
+    {
+        MyPlayer newPlayerScript = newPlayer.AddComponent<MyPlayer>();
+        newPlayerScript.username = username;
+        newPlayerScript.id = id;
+        myPlayer = newPlayerScript;
         return newPlayerScript;
     }
 
@@ -89,6 +100,17 @@ public class PlayerManager : MonoBehaviour
             Destroy(oldPlayer);
             players.Remove(id);
             SpawnPlayer(id, username, position);
+        }
+    }
+
+    public void UpdateInventory(Inventory inventory)
+    {
+        myPlayer.inventory = inventory;
+
+        foreach(ItemObject item in inventory.slots)
+        {
+            if(item != null)
+                Debug.Log(item.item.name);
         }
     }
 
