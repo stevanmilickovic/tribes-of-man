@@ -13,4 +13,11 @@ public static class MapHandler
         MapManager.Singleton.CreateChunk(chunk);
     }
 
+    [MessageHandler((ushort)ServerToClientId.tile)]
+    public static void UpdateTile(Message message)
+    {
+        Tile tile = MessageExtensions.GetTile(message);
+        MapManager.Singleton.UpdateTile(tile);
+    }
+
 }

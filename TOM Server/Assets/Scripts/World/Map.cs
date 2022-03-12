@@ -30,6 +30,8 @@ public class Map
                 GenerateTile(x, y, noise);
             }
         }
+
+        tiles[0, 0].itemObject = new ItemObject(ItemManager.Singleton.items[0], 1);
     }
 
     private void GenerateChunk(int x, int y, int mapWidth, int mapHeight)

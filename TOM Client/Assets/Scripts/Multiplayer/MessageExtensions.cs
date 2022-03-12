@@ -45,7 +45,16 @@ public static class MessageExtensions
 
     public static Tile GetTile(Message message)
     {
-        return new Tile(message.GetInt(), message.GetInt(), (Tile.TerrainTypes)message.GetInt());
+        return new Tile(message.GetInt(), message.GetInt(), (Tile.TerrainTypes)message.GetInt(), GetItemObject(message));
+    }
+
+    public static ItemObject GetItemObject(Message message)
+    {
+        int id = message.GetInt();
+        if (id == -1)
+            return null;
+
+        return new ItemObject(ItemManager.Singleton.items[id], message.GetInt());
     }
 
 }

@@ -34,7 +34,10 @@ public class MapManager : MonoBehaviour
     }
 
     [SerializeField] private GameObject chunkPrefab;
+    [SerializeField] private GameObject itemObjectPrefab;
+    private Dictionary<(int, int), GameObject> spawnedItems;
     public Dictionary<(int, int), Chunk> chunks;
+    public Dictionary<(int, int), Tile> tiles;
 
     private void Awake()
     {
@@ -44,6 +47,8 @@ public class MapManager : MonoBehaviour
     private void Start()
     {
         chunks = new Dictionary<(int, int), Chunk>();
+        tiles = new Dictionary<(int, int), Tile>();
+        spawnedItems = new Dictionary<(int, int), GameObject>();
     }
 
     public void CreateChunk(Chunk chunk)
@@ -73,6 +78,8 @@ public class MapManager : MonoBehaviour
                 SetVertices(vertices, i, x, y);
                 SetTriangles(triangles, tris, vert);
                 SetUVs(currectUvs, uvs, chunk, cell, x, y);
+                AddTile(x, y, chunk);
+                UpdateTile(chunk.tiles[x, y]);
 
                 i += 4;
                 tris += 6;
@@ -85,6 +92,11 @@ public class MapManager : MonoBehaviour
         mesh.vertices = vertices;
         mesh.triangles = triangles;
         mesh.uv = uvs;
+    }
+
+    private void AddTile(int x, int y, Chunk chunk)
+    {
+        tiles.Add((chunk.tiles[x, y].x, chunk.tiles[x, y].y), chunk.tiles[x, y]);
     }
 
     private void SetVertices(Vector3[] vertices, int i, int x, int y)
@@ -149,6 +161,32 @@ public class MapManager : MonoBehaviour
         }
 
         return uvs;
+    }
+
+    public void UpdateTile(Tile tile)
+    {
+        tiles[(tile.x, tile.y)].itemObject = tile.itemObject;
+        UpdateTileItemObject(tile);
+    }
+
+    public void UpdateTileItemObject(Tile tile)
+    {
+        if(spawnedItems.ContainsKey((tile.x, tile.y)))
+        {
+            Destroy(spawnedItems[(tile.x, tile.y)]);
+        }
+
+        if(tile.itemObject != null)
+        {
+            SpawnItem(tile.x, tile.y, tile.itemObject);
+        }
+    }
+
+    public void SpawnItem(int x, int y, ItemObject itemObject)
+    {
+        spawnedItems[(x, y)] = Instantiate(itemObjectPrefab);
+        spawnedItems[(x, y)].transform.position = new Vector3(x + 0.5f, y + 0.5f, 0f);
+        spawnedItems[(x, y)].GetComponentInChildren<SpriteRenderer>().sprite = itemObject.item.sprite;
     }
 
 }

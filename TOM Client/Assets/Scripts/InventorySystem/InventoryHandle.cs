@@ -8,6 +8,7 @@ public static class InventoryHandle
     public static void UpdateInventory(Message message)
     {
         PlayerManager.Singleton.UpdateInventory(MessageExtensions.GetInventory(message));
+        DisplayInventory.Singleton.UpdateInventory();
     }
 
 }

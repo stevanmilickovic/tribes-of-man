@@ -1,4 +1,5 @@
 using RiptideNetworking;
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -38,6 +39,7 @@ public class PlayerManager : MonoBehaviour
     {
 
     }
+
 
     private void FixedUpdate()
     {
@@ -174,5 +176,44 @@ public class PlayerManager : MonoBehaviour
         message.AddInt(player.id);
         message.AddVector2(new Vector2(player.gameObject.transform.position.x, player.gameObject.transform.position.y));
         NetworkManager.Singleton.Server.SendToAll(message);
+    }
+
+    public void Pickup(ushort clientId, int x, int y)
+    {
+        Tile tile = MapManager.Singleton.map.tiles[x, y];
+        if(tile.itemObject != null)
+        {
+            if(playersByClientId[clientId].inventory.Add(tile.itemObject))
+                tile.itemObject = null;
+        }
+        SendInventoryMessage(playersByClientId[clientId], clientId);
+        MapManager.Singleton.SendTileMessage(clientId, tile);
+    }
+
+    public void SwapItems(ushort fromClientId, int slot1, int slot2)
+    {
+        Inventory inventory = playersByClientId[fromClientId].inventory;
+        ItemObject swappedItem = inventory.slots[slot1];
+        inventory.slots[slot1] = inventory.slots[slot2];
+        inventory.slots[slot2] = swappedItem;
+
+        SendInventoryMessage(playersByClientId[fromClientId], fromClientId);
+    }
+
+    public void DropItem(ushort clientId, int slot)
+    {
+        Player player = playersByClientId[clientId];
+        ItemObject itemObject = player.inventory.slots[slot];
+        if (itemObject == null)
+            return;
+
+        Tile tile = MapManager.Singleton.DropItem((int)player.gameObject.transform.position.x, (int)player.gameObject.transform.position.y, itemObject);
+
+        if (tile != null)
+        {
+            player.inventory.slots[slot] = null;
+            MapManager.Singleton.SendTileMessage(clientId, tile);
+        }
+        SendInventoryMessage(player, clientId);
     }
 }

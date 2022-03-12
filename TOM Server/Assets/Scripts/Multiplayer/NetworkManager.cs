@@ -5,7 +5,11 @@ using UnityEngine;
 public enum ClientToServerId : ushort
 {
     join = 1,
-    input
+    input,
+    pickup,
+    craft,
+    swap,
+    drop
 }
 
 public enum ServerToClientId : ushort
@@ -14,6 +18,7 @@ public enum ServerToClientId : ushort
     yourPlayerId,
     playerPosition,
     chunk,
+    tile,
     playerInventory
 }
 

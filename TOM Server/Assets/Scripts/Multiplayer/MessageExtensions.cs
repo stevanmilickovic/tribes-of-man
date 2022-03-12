@@ -54,6 +54,22 @@ public static class MessageExtentions
         message.Add(tile.y);
 
         message.Add((int)tile.type);
+        AddItemObject(message, tile.itemObject);
+
+        return message;
+    }
+
+    public static Message AddItemObject(Message message, ItemObject itemObject)
+    {
+        if (itemObject == null)
+        {
+            message.Add(-1);
+            return message;
+        }
+
+        Debug.Log($"ID is {itemObject.item.id}");
+        message.Add(itemObject.item.id);
+        message.Add(itemObject.amount);
 
         return message;
     }

@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using RiptideNetworking;
+using System;
 
 public class PlayerManager : MonoBehaviour
 {
@@ -24,10 +25,13 @@ public class PlayerManager : MonoBehaviour
 
     [SerializeField] private GameObject playerPrefab;
     [SerializeField] private GameObject myPlayerPrefab;
-    private MyPlayer myPlayer;
-    private Dictionary<int, Player> players;
-    private int myId = -1;
+    public MyPlayer myPlayer;
+    public Dictionary<int, Player> players;
+    public int myId = -1;
     private bool[] inputs = new bool[4];
+    private int awaitedInventoryUpdates = 0;
+
+    public Camera mainCamera;
 
     private void Awake()
     {
@@ -38,6 +42,8 @@ public class PlayerManager : MonoBehaviour
     private void Update()
     {
         GetInputs();
+        if (Input.GetKey(KeyCode.Mouse1))
+            Pickup();
     }
 
     private void FixedUpdate()
@@ -86,6 +92,7 @@ public class PlayerManager : MonoBehaviour
         newPlayerScript.username = username;
         newPlayerScript.id = id;
         myPlayer = newPlayerScript;
+        mainCamera.transform.SetParent(newPlayer.transform);
         return newPlayerScript;
     }
 
@@ -103,17 +110,6 @@ public class PlayerManager : MonoBehaviour
         }
     }
 
-    public void UpdateInventory(Inventory inventory)
-    {
-        myPlayer.inventory = inventory;
-
-        foreach(ItemObject item in inventory.slots)
-        {
-            if(item != null)
-                Debug.Log(item.item.name);
-        }
-    }
-
     public void UpdatePlayerPosition(int id, Vector2 position)
     {
         if(players.TryGetValue(id, out Player player))
@@ -122,6 +118,55 @@ public class PlayerManager : MonoBehaviour
         }
     }
 
+    #region Inventory
+
+    public void UpdateInventory(Inventory inventory)
+    {
+        if(awaitedInventoryUpdates <= 1)
+            myPlayer.inventory = inventory;
+        awaitedInventoryUpdates--;
+    }
+
+    public void Pickup()
+    {
+        Vector3 mousePosition = mainCamera.ScreenToWorldPoint(Input.mousePosition);
+        int x = (int)mousePosition.x;
+        int y = (int)mousePosition.y;
+        if (MapManager.Singleton.tiles[(x, y)].itemObject != null)
+        {
+            SendPickupMessage(x, y);
+        }
+    }
+
+    public void SendPickupMessage(int x, int y)
+    {
+        Message message = Message.Create(MessageSendMode.reliable, ClientToServerId.pickup);
+        message.Add(x);
+        message.Add(y);
+        NetworkManager.Singleton.Client.Send(message);
+        awaitedInventoryUpdates++;
+    }
+
+    public void SwapItems(int slot1, int slot2)
+    {
+        Message message = Message.Create(MessageSendMode.reliable, ClientToServerId.swap);
+        message.Add(slot1);
+        message.Add(slot2);
+        NetworkManager.Singleton.Client.Send(message);
+        awaitedInventoryUpdates++;
+    }
+
+    public void DropItem(int slot)
+    {
+        Message message = Message.Create(MessageSendMode.reliable, ClientToServerId.drop);
+        message.Add(slot);
+        NetworkManager.Singleton.Client.Send(message);
+        awaitedInventoryUpdates++;
+    }
+
+    #endregion
+
+    #region Movement Inputs
     private void SendInputs()
     {
         Message message = Message.Create(MessageSendMode.unreliable, ClientToServerId.input);
@@ -168,4 +213,5 @@ public class PlayerManager : MonoBehaviour
         }
         return false;
     }
+    #endregion
 }

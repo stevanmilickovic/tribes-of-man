@@ -1,5 +1,6 @@
 using RiptideNetworking;
 using UnityEngine;
+using System;
 
 public class MapManager : MonoBehaviour
 {
@@ -73,11 +74,53 @@ public class MapManager : MonoBehaviour
         }
     }
 
-    private void SendChunkMessage(ushort clientId, Chunk chunk)
+    public void SendChunkMessage(ushort clientId, Chunk chunk)
     {
         Message message = Message.Create(MessageSendMode.reliable, ServerToClientId.chunk);
         MessageExtentions.Add(message, chunk);
         NetworkManager.Singleton.Server.Send(message, clientId);
+    }
+
+    public void SendTileMessage(ushort clientId, Tile tile)
+    {
+        Message message = Message.Create(MessageSendMode.reliable, ServerToClientId.tile);
+        MessageExtentions.Add(message, tile);
+        NetworkManager.Singleton.Server.Send(message, clientId);
+    }
+
+    public Tile DropItem(int x, int y, ItemObject itemObject)
+    {
+        Tile tile = map.tiles[x, y];
+
+        if(tile.itemObject == null)
+        {
+            tile.itemObject = itemObject;
+            return tile;
+        }
+        
+        for (int _y = y + 1; _y >= y - 1; _y--)
+        {
+            for (int _x = x - 1; _x <= x + 1; _x++)
+            {
+                if (_x >= 0 && _y >= 0 && _x < map.tiles.GetLength(0) && _y < map.tiles.GetLength(1))
+                {
+                    if (TryToDrop(map.tiles[_x, _y], itemObject))
+                        return (map.tiles[_x, _y]);
+                }
+            }
+        }
+
+        return null;
+    }
+
+    private bool TryToDrop(Tile tile, ItemObject itemObject)
+    {
+        if (tile.itemObject == null)
+        {
+            tile.itemObject = itemObject;
+            return true;
+        }
+        return false;
     }
 
 }

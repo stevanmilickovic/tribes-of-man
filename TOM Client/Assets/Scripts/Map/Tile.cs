@@ -16,6 +16,7 @@ public class Tile
 
     public int x;
     public int y;
+    public ItemObject itemObject;
 
     public Chunk chunk;
 
@@ -24,5 +25,13 @@ public class Tile
         x = _x;
         y = _y;
         type = _type;
+    }
+
+    public Tile(int _x, int _y, TerrainTypes _type, ItemObject _itemObject)
+    {
+        x = _x;
+        y = _y;
+        type = _type;
+        itemObject = _itemObject;
     }
 }
