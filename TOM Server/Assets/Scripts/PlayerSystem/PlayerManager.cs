@@ -95,7 +95,7 @@ public class PlayerManager : MonoBehaviour
         return newPlayerScript;
     }
 
-    private void SendInventoryMessage(Player player, ushort clientId)
+    public void SendInventoryMessage(Player player, ushort clientId)
     {
         Message message = Message.Create(MessageSendMode.reliable, ServerToClientId.playerInventory);
         MessageExtentions.Add(message, player.inventory);
@@ -187,7 +187,7 @@ public class PlayerManager : MonoBehaviour
                 tile.itemObject = null;
         }
         SendInventoryMessage(playersByClientId[clientId], clientId);
-        MapManager.Singleton.SendTileMessage(clientId, tile);
+        MapManager.Singleton.SendTileMessage(tile);
     }
 
     public void SwapItems(ushort fromClientId, int slot1, int slot2)
@@ -212,8 +212,14 @@ public class PlayerManager : MonoBehaviour
         if (tile != null)
         {
             player.inventory.slots[slot] = null;
-            MapManager.Singleton.SendTileMessage(clientId, tile);
+            MapManager.Singleton.SendTileMessage(tile);
         }
         SendInventoryMessage(player, clientId);
+    }
+
+    public void CraftItems(ushort clientId, int slot, int tileX, int tileY)
+    {
+
+        Crafting.Singleton.Craft(clientId, slot, tileX, tileY);
     }
 }

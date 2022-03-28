@@ -81,11 +81,11 @@ public class MapManager : MonoBehaviour
         NetworkManager.Singleton.Server.Send(message, clientId);
     }
 
-    public void SendTileMessage(ushort clientId, Tile tile)
+    public void SendTileMessage(Tile tile)
     {
         Message message = Message.Create(MessageSendMode.reliable, ServerToClientId.tile);
         MessageExtentions.Add(message, tile);
-        NetworkManager.Singleton.Server.Send(message, clientId);
+        NetworkManager.Singleton.Server.SendToAll(message);
     }
 
     public Tile DropItem(int x, int y, ItemObject itemObject)

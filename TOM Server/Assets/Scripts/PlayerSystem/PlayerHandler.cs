@@ -40,4 +40,13 @@ public static class PlayerHandler
         PlayerManager.Singleton.DropItem(fromClientId, slot);
     }
 
+    [MessageHandler((ushort)ClientToServerId.craft)]
+    public static void PlayerCraft(ushort fromClientId, Message message)
+    {
+        int slot = message.GetInt();
+        int tileX = message.GetInt();
+        int tileY = message.GetInt();
+        PlayerManager.Singleton.CraftItems(fromClientId, slot, tileX, tileY);
+    }
+
 }

@@ -95,16 +95,20 @@ public class DisplayInventory : MonoBehaviour
         Vector2 chunk = new Vector2((int)(mousePosition.x / 50), (int)(mousePosition.y / 50));
         int tileX = (int)(mousePosition.x) % 50;
         int tileY = (int)(mousePosition.y) % 50;
+        Tile tile = MapManager.Singleton.tiles[(tileX, tileY)];
+
         if (mouseItem.hoverSlot)
         {
             TemporarilySwapSlots(mouseItem.slot, mouseItem.hoverSlot);
-            //ClientSend.SwapItems(PlayerManager.instance.myPlayerName, GetIndex(mouseItem.slot), GetIndex(mouseItem.hoverSlot)); TODO
             PlayerManager.Singleton.SwapItems(GetIndex(mouseItem.slot), GetIndex(mouseItem.hoverSlot));
+        }
+        else if(tile.itemObject != null)
+        {
+            AttemptCraftItems(mouseItem.slot, tile);
         }
         else
         {
             TemporarilyDropItem(mouseItem.slot);
-            //ClientSend.DropItem(PlayerManager.instance.myPlayerName, GetIndex(mouseItem.slot)); TODO
             PlayerManager.Singleton.DropItem(GetIndex(mouseItem.slot));
         }
         Destroy(mouseItem.obj);
@@ -136,6 +140,11 @@ public class DisplayInventory : MonoBehaviour
         ItemObject obj = inventory.slots[GetIndex(slot)];
         inventory.slots[GetIndex(slot)] = null;
         UpdateSlotDisplay(slot, null);
+    }
+
+    public void AttemptCraftItems(GameObject slot, Tile tile)
+    {
+        Crafting.Singleton.Craft(GetIndex(slot), tile.x, tile.y);
     }
 
     public void CreateDisplay()

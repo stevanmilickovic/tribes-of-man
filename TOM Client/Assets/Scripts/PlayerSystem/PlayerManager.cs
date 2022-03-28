@@ -164,6 +164,16 @@ public class PlayerManager : MonoBehaviour
         awaitedInventoryUpdates++;
     }
 
+    public void CraftItems(int slot, int tileX, int tileY)
+    {
+        Message message = Message.Create(MessageSendMode.reliable, ClientToServerId.craft);
+        message.Add(slot);
+        message.Add(tileX);
+        message.Add(tileY);
+        NetworkManager.Singleton.Client.Send(message);
+        awaitedInventoryUpdates++;
+    }
+
     #endregion
 
     #region Movement Inputs
