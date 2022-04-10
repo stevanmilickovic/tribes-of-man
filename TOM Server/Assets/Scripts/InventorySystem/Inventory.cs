@@ -52,4 +52,15 @@ public class Inventory
         return false;
     }
 
+    public void ReduceSlotAmount(int slot)
+    {
+        ItemObject itemObject = slots[slot];
+        itemObject.amount -= 1;
+        
+        if(itemObject.amount <= 0)
+        {
+            slots[slot] = null;
+        }
+    }
+
 }

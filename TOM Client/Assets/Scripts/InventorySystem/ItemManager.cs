@@ -21,12 +21,14 @@ public class ItemManager : MonoBehaviour
         }
     }
 
-    public Dictionary<int, Item> items = new Dictionary<int, Item>();
+    public Dictionary<int, Item> items;
+    public Dictionary<string, Item> itemsByName;
 
     private void Awake()
     {
         Singleton = this;
         items = new Dictionary<int, Item>();
+        itemsByName = new Dictionary<string, Item>();
         InitializeItems();
     }
 
@@ -40,6 +42,7 @@ public class ItemManager : MonoBehaviour
     {
         Item newItem = new Item(type, id, name, isStackable, GetSprite(spriteName));
         items.Add(id, newItem);
+        itemsByName.Add(name, newItem);
         return newItem;
     }
 

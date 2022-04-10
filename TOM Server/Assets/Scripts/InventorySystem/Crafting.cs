@@ -20,26 +20,28 @@ public class Crafting : MonoBehaviour
             }
         }
     }
-    public Dictionary<(Item, int, Item, int), (Item, int)> recipes;
+
+    public Dictionary<(Item, Item), (Item, int)> recipes;
 
     private void Start()
     {
-        recipes = new Dictionary<(Item, int, Item, int), (Item, int)>();
+        recipes = new Dictionary<(Item, Item), (Item, int)>();
         InitializeRecipes();
         Singleton = this;
     }
 
     private void InitializeRecipes()
     {
-        AddRecipe(0, 1, 0, 1, 1, 1); //Stick + Stick = Wood
+        AddRecipe("stick", "stick", "wood", 1);
+        AddRecipe("wood", "wood", "stick", 1);
     }
 
-    private void AddRecipe(int item1Id, int item1Amount, int item2Id, int item2Amount, int resultId, int resultAmount)
+    private void AddRecipe(string item1name, string item2name, string resultItem, int resultAmount)
     {
-        Item item1 = ItemManager.Singleton.items[item1Id];
-        Item item2 = ItemManager.Singleton.items[item2Id];
-        Item result = ItemManager.Singleton.items[resultId];
-        recipes.Add((item1, item1Amount, item2, item2Amount), (result, resultAmount));
+        Item item1 = ItemManager.Singleton.itemsByName[item1name];
+        Item item2 = ItemManager.Singleton.itemsByName[item2name];
+        Item result = ItemManager.Singleton.itemsByName[resultItem];
+        recipes.Add((item1, item2), (result, resultAmount));
     }
 
     public void Craft(ushort clientId, int slot, int tileX, int tileY)
@@ -47,38 +49,51 @@ public class Crafting : MonoBehaviour
         Player player = PlayerManager.Singleton.playersByClientId[clientId];
         ItemObject item = player.inventory.slots[slot];
         Tile tile = MapManager.Singleton.map.tiles[tileX, tileY];
+        Tile droppedTile = null;
 
-        if (tile.itemObject != null && item != null)
+        if (tile.itemObject != null && item != null && GetRecipe(item, tile.itemObject) != null)
         {
-            if (RecipeExists(item, tile.itemObject))
+            ItemObject craftedObject = GetRecipe(item, tile.itemObject);
+            if (tile.itemObject.amount == 1)
             {
-                tile.itemObject = GetRecipe(item, tile.itemObject);
-                player.inventory.slots[slot] = null;
+                tile.itemObject = craftedObject;
+                player.inventory.ReduceSlotAmount(slot);
             }
-            else if(RecipeExists(tile.itemObject, item)) // Inverse order for recipe key
+            else
             {
-                tile.itemObject = GetRecipe(tile.itemObject, item);
-                player.inventory.slots[slot] = null;
+                droppedTile = MapManager.Singleton.DropItem(tileX, tileY, craftedObject);
+                if(droppedTile != null)
+                {
+                    tile.itemObject.amount -= 1;
+                    player.inventory.ReduceSlotAmount(slot);
+                }
             }
         }
 
+        if (droppedTile != null)
+            MapManager.Singleton.SendTileMessage(droppedTile);
         MapManager.Singleton.SendTileMessage(tile);
         PlayerManager.Singleton.SendInventoryMessage(player, clientId);
     }
 
-    public ItemObject GetRecipe(ItemObject item1, ItemObject item2)
+    private ItemObject GetRecipe(ItemObject item1, ItemObject item2)
     {
-        if (recipes.ContainsKey((item1.item, item1.amount, item2.item, item2.amount)))
+        if (RecipeExists(item1, item2))
         {
-            (Item item, int amount) result = recipes[(item1.item, item1.amount, item2.item, item2.amount)];
+            (Item item, int amount) result = recipes[(item1.item, item2.item)];
+            return new ItemObject(result.item, result.amount);
+        }
+        else if (RecipeExists(item2, item1))
+        {
+            (Item item, int amount) result = recipes[(item2.item, item1.item)];
             return new ItemObject(result.item, result.amount);
         }
         return null;
     }
 
-    public bool RecipeExists(ItemObject item1, ItemObject item2)
+    private bool RecipeExists(ItemObject item1, ItemObject item2)
     {
-        if (recipes.ContainsKey((item1.item, item1.amount, item2.item, item2.amount)))
+        if (recipes.ContainsKey((item1.item, item2.item)))
         {
             return true;
         }

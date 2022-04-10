@@ -22,6 +22,7 @@ public class ItemManager : MonoBehaviour
     }
 
     public Dictionary<int, Item> items = new Dictionary<int, Item>();
+    public Dictionary<string, Item> itemsByName = new Dictionary<string, Item>();
 
     private void Awake()
     {
@@ -31,7 +32,14 @@ public class ItemManager : MonoBehaviour
 
     private void InitializeItems()
     {
-        items.Add(0, new Item(Item.Type.Weapon, 0, "stick", false));
-        items.Add(1, new Item(Item.Type.Resource, 1, "wood", true));
+        AddItem(Item.Type.Weapon, 0, "stick", false);
+        AddItem(Item.Type.Resource, 1, "wood", true);
+    }
+
+    private void AddItem(Item.Type type, int id, string name, bool stackable)
+    {
+        Item newItem = new Item(type, id, name, stackable);
+        items.Add(id, newItem);
+        itemsByName.Add(name, newItem);
     }
 }

@@ -165,13 +165,13 @@ public class MapManager : MonoBehaviour
 
     public void UpdateTile(Tile tile)
     {
-        tiles[(tile.x, tile.y)].itemObject = tile.itemObject;
         UpdateTileItemObject(tile);
     }
 
     public void UpdateTileItemObject(Tile tile)
     {
-        if(spawnedItems.ContainsKey((tile.x, tile.y)))
+        tiles[(tile.x, tile.y)].itemObject = tile.itemObject;
+        if (spawnedItems.ContainsKey((tile.x, tile.y)))
         {
             Destroy(spawnedItems[(tile.x, tile.y)]);
         }
@@ -187,6 +187,37 @@ public class MapManager : MonoBehaviour
         spawnedItems[(x, y)] = Instantiate(itemObjectPrefab);
         spawnedItems[(x, y)].transform.position = new Vector3(x + 0.5f, y + 0.5f, 0f);
         spawnedItems[(x, y)].GetComponentInChildren<SpriteRenderer>().sprite = itemObject.item.sprite;
+    }
+
+    public Tile DropItem(int x, int y, ItemObject itemObject)
+    {
+        Tile tile = tiles[(x, y)];
+
+        if (TryToDrop(tile, itemObject))
+        {
+            return tile;
+        }
+
+        for (int _y = y + 1; _y >= y - 1; _y--)
+        {
+            for (int _x = x - 1; _x <= x + 1; _x++)
+            {
+                if (TryToDrop(tiles[(x, y)], itemObject))
+                    return (tiles[(x, y)]);
+            }
+        }
+
+        return null;
+    }
+
+    private bool TryToDrop(Tile tile, ItemObject itemObject)
+    {
+        if (tile.itemObject == null)
+        {
+            tile.itemObject = itemObject;
+            return true;
+        }
+        return false;
     }
 
 }

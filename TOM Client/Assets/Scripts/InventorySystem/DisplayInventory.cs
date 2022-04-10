@@ -95,14 +95,16 @@ public class DisplayInventory : MonoBehaviour
         Vector2 chunk = new Vector2((int)(mousePosition.x / 50), (int)(mousePosition.y / 50));
         int tileX = (int)(mousePosition.x) % 50;
         int tileY = (int)(mousePosition.y) % 50;
-        Tile tile = MapManager.Singleton.tiles[(tileX, tileY)];
+        Tile tile = null;
+        if(tileX >= 0 && tileY >= 0)
+            tile = MapManager.Singleton.tiles[(tileX, tileY)];
 
         if (mouseItem.hoverSlot)
         {
             TemporarilySwapSlots(mouseItem.slot, mouseItem.hoverSlot);
             PlayerManager.Singleton.SwapItems(GetIndex(mouseItem.slot), GetIndex(mouseItem.hoverSlot));
         }
-        else if(tile.itemObject != null)
+        else if (tile != null && tile.itemObject != null)
         {
             AttemptCraftItems(mouseItem.slot, tile);
         }

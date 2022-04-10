@@ -92,9 +92,8 @@ public class MapManager : MonoBehaviour
     {
         Tile tile = map.tiles[x, y];
 
-        if(tile.itemObject == null)
+        if(TryToDrop(tile, itemObject))
         {
-            tile.itemObject = itemObject;
             return tile;
         }
         
