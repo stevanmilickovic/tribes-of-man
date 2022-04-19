@@ -29,10 +29,9 @@ public class ItemManager : MonoBehaviour
         Singleton = this;
         items = new Dictionary<int, Item>();
         itemsByName = new Dictionary<string, Item>();
-        InitializeItems();
     }
 
-    private void InitializeItems()
+    public void InitializeItems()
     {
         AddItem(0, Item.Type.Weapon, "stick", false, "stick");
         AddItem(1, Item.Type.Resource, "wood", false, "wood");

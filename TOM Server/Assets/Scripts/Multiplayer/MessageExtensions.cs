@@ -55,6 +55,7 @@ public static class MessageExtentions
 
         message.Add((int)tile.type);
         AddItemObject(message, tile.itemObject);
+        AddStructureObject(message, tile.structureObject);
 
         return message;
     }
@@ -67,9 +68,24 @@ public static class MessageExtentions
             return message;
         }
 
-        Debug.Log($"ID is {itemObject.item.id}");
         message.Add(itemObject.item.id);
         message.Add(itemObject.amount);
+
+        return message;
+    }
+
+    public static Message AddStructureObject(Message message, StructureObject structureObject)
+    {
+        if(structureObject == null)
+        {
+            message.Add(-1);
+            return message;
+        }
+
+        message.Add(structureObject.structure.id);
+        message.Add(structureObject.destroyed);
+        message.Add(structureObject.health);
+        message.Add(structureObject.destroyedHealth);
 
         return message;
     }

@@ -35,7 +35,9 @@ public class MapManager : MonoBehaviour
 
     [SerializeField] private GameObject chunkPrefab;
     [SerializeField] private GameObject itemObjectPrefab;
+    [SerializeField] private GameObject structureObjectPrefab;
     private Dictionary<(int, int), GameObject> spawnedItems;
+    private Dictionary<(int, int), GameObject> spawnedStructures; 
     public Dictionary<(int, int), Chunk> chunks;
     public Dictionary<(int, int), Tile> tiles;
 
@@ -49,6 +51,7 @@ public class MapManager : MonoBehaviour
         chunks = new Dictionary<(int, int), Chunk>();
         tiles = new Dictionary<(int, int), Tile>();
         spawnedItems = new Dictionary<(int, int), GameObject>();
+        spawnedStructures = new Dictionary<(int, int), GameObject>();
     }
 
     public void CreateChunk(Chunk chunk)
@@ -166,6 +169,7 @@ public class MapManager : MonoBehaviour
     public void UpdateTile(Tile tile)
     {
         UpdateTileItemObject(tile);
+        UpdateTileStructureObject(tile);
     }
 
     public void UpdateTileItemObject(Tile tile)
@@ -187,6 +191,27 @@ public class MapManager : MonoBehaviour
         spawnedItems[(x, y)] = Instantiate(itemObjectPrefab);
         spawnedItems[(x, y)].transform.position = new Vector3(x + 0.5f, y + 0.5f, 0f);
         spawnedItems[(x, y)].GetComponentInChildren<SpriteRenderer>().sprite = itemObject.item.sprite;
+    }
+
+    public void UpdateTileStructureObject(Tile tile)
+    {
+        tiles[(tile.x, tile.y)].structureObject = tile.structureObject;
+        if (spawnedStructures.ContainsKey((tile.x, tile.y)))
+        {
+            Destroy(spawnedStructures[(tile.x, tile.y)]);
+        }
+
+        if (tile.structureObject != null)
+        {
+            SpawnStructure(tile.x, tile.y, tile.structureObject);
+        }
+    }
+
+    private void SpawnStructure(int x, int y, StructureObject structureObject)
+    {
+        spawnedStructures[(x, y)] = Instantiate(structureObjectPrefab);
+        spawnedStructures[(x, y)].transform.position = new Vector3(x + 0.5f, y + 0.5f, 0f);
+        spawnedStructures[(x, y)].GetComponentInChildren<SpriteRenderer>().sprite = structureObject.structure.sprite;
     }
 
     public Tile DropItem(int x, int y, ItemObject itemObject)

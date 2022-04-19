@@ -23,14 +23,13 @@ public class Crafting : MonoBehaviour
 
     public Dictionary<(Item, Item), (Item, int)> recipes;
 
-    private void Start()
+    private void Awake()
     {
         recipes = new Dictionary<(Item, Item), (Item, int)>();
-        InitializeRecipes();
         Singleton = this;
     }
 
-    private void InitializeRecipes()
+    public void InitializeRecipes()
     {
         AddRecipe("stick", "stick", "wood", 1);
         AddRecipe("wood", "wood", "stick", 1);

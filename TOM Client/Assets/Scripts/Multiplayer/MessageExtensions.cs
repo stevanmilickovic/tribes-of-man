@@ -45,7 +45,7 @@ public static class MessageExtensions
 
     public static Tile GetTile(Message message)
     {
-        return new Tile(message.GetInt(), message.GetInt(), (Tile.TerrainTypes)message.GetInt(), GetItemObject(message));
+        return new Tile(message.GetInt(), message.GetInt(), (Tile.TerrainTypes)message.GetInt(), GetItemObject(message), GetStructureObject(message));
     }
 
     public static ItemObject GetItemObject(Message message)
@@ -55,6 +55,15 @@ public static class MessageExtensions
             return null;
 
         return new ItemObject(ItemManager.Singleton.items[id], message.GetInt());
+    }
+
+    public static StructureObject GetStructureObject(Message message)
+    {
+        int id = message.GetInt();
+        if (id == -1)
+            return null;
+
+        return new StructureObject(StructureManager.Singleton.structures[id], message.GetBool(), message.GetInt(), message.GetInt());
     }
 
 }

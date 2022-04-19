@@ -27,10 +27,9 @@ public class ItemManager : MonoBehaviour
     private void Awake()
     {
         Singleton = this;
-        InitializeItems();
     }
 
-    private void InitializeItems()
+    public void InitializeItems()
     {
         AddItem(Item.Type.Weapon, 0, "stick", false);
         AddItem(Item.Type.Resource, 1, "wood", true);

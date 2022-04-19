@@ -42,7 +42,12 @@ public class MapManager : MonoBehaviour
 
     private void Start()
     {
+    }
+
+    public void InitializeMap()
+    {
         map = new Map(mapWidth, mapHeight, Noise.GenerateNoiseMap(mapWidth, mapHeight, seed, noiseScale, octaves, persistence, lacunarity, offset));
+        map.tiles[1, 1].structureObject = new StructureObject(StructureManager.Singleton.structures[0]); //TO REMOVE LATER
     }
 
     private void OnValidate()
