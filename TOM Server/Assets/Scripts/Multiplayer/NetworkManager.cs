@@ -14,7 +14,8 @@ public enum ClientToServerId : ushort
 
 public enum ServerToClientId : ushort
 {
-    spawnPlayer = 1,
+    sync = 1,
+    spawnPlayer,
     yourPlayerId,
     playerPosition,
     chunk,
@@ -42,6 +43,7 @@ public class NetworkManager : MonoBehaviour
     }
 
     public Server Server { get; private set; }
+    public ushort CurrentTick { get; private set; } = 0;
 
     [SerializeField] private ushort port;
     [SerializeField] private ushort maxClientCount;
@@ -65,6 +67,11 @@ public class NetworkManager : MonoBehaviour
     private void FixedUpdate()
     {
         Server.Tick();
+
+        if (CurrentTick % 160 == 0)
+            SendSync();
+
+        CurrentTick++;
     }
 
     private void OnApplicationQuit()
@@ -75,5 +82,12 @@ public class NetworkManager : MonoBehaviour
     private void PlayerLeft(object sender, ClientDisconnectedEventArgs e)
     {
         PlayerManager.Singleton.PlayerLeft(e.Id);
+    }
+
+    public void SendSync()
+    {
+        Message message = Message.Create(MessageSendMode.unreliable, ServerToClientId.sync);
+        message.Add(CurrentTick);
+        Server.SendToAll(message);
     }
 }

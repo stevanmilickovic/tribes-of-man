@@ -14,7 +14,8 @@ public enum ClientToServerId : ushort
 }
 public enum ServerToClientId : ushort
 {
-    spawnPlayer = 1,
+    sync = 1,
+    spawnPlayer,
     yourPlayerId,
     playerPosition,
     chunk,
@@ -42,8 +43,33 @@ public class NetworkManager : MonoBehaviour
 
     [SerializeField] private string ip;
     [SerializeField] private ushort port;
+    [Space(10)]
+    [SerializeField] private ushort tickDivergenceTolerance = 1;
 
     public Client Client { get; private set; }
+
+    private ushort _serverTick;
+    public ushort ServerTick
+    {
+        get => _serverTick;
+        private set
+        {
+            _serverTick = value;
+            InterpolationTick = (ushort)(value - TicksBetweenPositionUpdates);
+        }
+    }    
+    public ushort InterpolationTick { get; private set; }
+
+    private ushort _ticksBetweenPositionUpdates = 2;
+    public ushort TicksBetweenPositionUpdates
+    {
+        get => _ticksBetweenPositionUpdates;
+        private set
+        {
+            _ticksBetweenPositionUpdates = value;
+            InterpolationTick = (ushort)(ServerTick - value);
+        }
+    }
 
     private void Awake()
     {
@@ -59,12 +85,13 @@ public class NetworkManager : MonoBehaviour
         Client.Connected += DidConnect;
         Client.ConnectionFailed += FailedToConnect;
         Client.Disconnected += DidDisconnect;
-        
+        ServerTick = 2;
     }
 
     private void FixedUpdate()
     {
         Client.Tick();
+        ServerTick++;
     }
 
     private void OnApplicationQuit()
@@ -90,5 +117,20 @@ public class NetworkManager : MonoBehaviour
     private void DidDisconnect(object sender, EventArgs e)
     {
         UIManager.Singleton.BackToMain();
+    }
+
+    private void SetTick(ushort serverTick)
+    {
+        if (Math.Abs(ServerTick - serverTick) > tickDivergenceTolerance)
+        {
+            Debug.Log($"Client tick {ServerTick} -> {serverTick}");
+            ServerTick = serverTick;
+        }
+    }
+
+    [MessageHandler((ushort)ServerToClientId.sync)]
+    public static void Sync(Message message)
+    {
+        Singleton.SetTick(message.GetUShort());
     }
 }

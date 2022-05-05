@@ -48,6 +48,7 @@ public class PlayerManager : MonoBehaviour
 
     public void PlayerJoined(ushort clientId, string name)
     {
+        NetworkManager.Singleton.SendSync();
         if (playersByName.ContainsKey(name)) 
         {
             UpdatePlayer(playersByName[name], clientId);
@@ -172,8 +173,13 @@ public class PlayerManager : MonoBehaviour
 
     private void SendPlayerPosition(Player player)
     {
+
+        if (NetworkManager.Singleton.CurrentTick % 2 != 0)
+            return;
+
         Message message = Message.Create(MessageSendMode.unreliable, ServerToClientId.playerPosition);
         message.AddInt(player.id);
+        message.AddUShort(NetworkManager.Singleton.CurrentTick);
         message.AddVector2(new Vector2(player.gameObject.transform.position.x, player.gameObject.transform.position.y));
         NetworkManager.Singleton.Server.SendToAll(message);
     }

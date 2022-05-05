@@ -24,8 +24,9 @@ public static class PlayerHandler
     public static void PlayerPosition(Message message)
     {
         int id = message.GetInt();
+        ushort tick = message.GetUShort();
         Vector2 position = message.GetVector2();
-        PlayerManager.Singleton.UpdatePlayerPosition(id, position);
+        PlayerManager.Singleton.UpdatePlayerPosition(id, tick, position);
     }
 
 }

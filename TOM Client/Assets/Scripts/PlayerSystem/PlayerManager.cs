@@ -25,6 +25,7 @@ public class PlayerManager : MonoBehaviour
 
     [SerializeField] private GameObject playerPrefab;
     [SerializeField] private GameObject myPlayerPrefab;
+    [SerializeField] private Interpolator interpolator;
     public MyPlayer myPlayer;
     public Dictionary<int, Player> players;
     public int myId = -1;
@@ -70,7 +71,7 @@ public class PlayerManager : MonoBehaviour
     private void InstantiatePlayer(GameObject playerObject ,int id, string username, Vector2 position)
     {
         GameObject player = Instantiate(playerObject);
-        player.transform.position.Set(position.x, position.y, 0f);
+        player.transform.position = new Vector3(position.x, position.y, 0f);
         player.name = username;
         Player playerScript = SetPlayerScript(player, id, username);
         players.Add(id, playerScript);
@@ -93,6 +94,8 @@ public class PlayerManager : MonoBehaviour
         newPlayerScript.id = id;
         myPlayer = newPlayerScript;
         mainCamera.transform.SetParent(newPlayer.transform);
+        mainCamera.transform.position = newPlayer.transform.position;
+        newPlayer.GetComponentInChildren<Transform>().position = newPlayer.transform.position;
         return newPlayerScript;
     }
 
@@ -110,11 +113,13 @@ public class PlayerManager : MonoBehaviour
         }
     }
 
-    public void UpdatePlayerPosition(int id, Vector2 position)
+    public void UpdatePlayerPosition(int id, ushort tick, Vector2 position)
     {
-        if(players.TryGetValue(id, out Player player))
+        if(players.TryGetValue(id, out Player player) && id != myId)
+            player.Move(tick, position);
+        else if (id == myId)
         {
-            player.gameObject.transform.position = new Vector3(position.x, position.y, 0f);
+            myPlayer.Reconciliate(tick, position);
         }
     }
 

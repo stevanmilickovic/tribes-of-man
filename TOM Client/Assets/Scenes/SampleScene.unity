@@ -588,7 +588,7 @@ Camera:
   far clip plane: 1000
   field of view: 60
   orthographic: 1
-  orthographic size: 5
+  orthographic size: 6.192679
   m_Depth: -1
   m_CullingMask:
     serializedVersion: 2
@@ -649,6 +649,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   playerPrefab: {fileID: 1108887742912070128, guid: f909af56c212e284e9a52da03677df24, type: 3}
   myPlayerPrefab: {fileID: 4900349987123933715, guid: e43738674456cc94d87d0d207f470fb9, type: 3}
+  interpolator: {fileID: 0}
   myPlayer: {fileID: 0}
   myId: -1
   mainCamera: {fileID: 519420031}
@@ -1288,6 +1289,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   ip: 127.0.0.1
   port: 62262
+  tickDivergenceTolerance: 1
 --- !u!4 &1591425641
 Transform:
   m_ObjectHideFlags: 0
