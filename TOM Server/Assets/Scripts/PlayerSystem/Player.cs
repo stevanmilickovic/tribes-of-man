@@ -10,6 +10,8 @@ public class Player : MonoBehaviour
     public ushort currectClientId;
     public string playerName;
     public Inventory inventory;
+    public Equipment clothes;
+    public Equipment tools;
 
     public Player(int _id, ushort _currectClientId, string _playerName)
     {

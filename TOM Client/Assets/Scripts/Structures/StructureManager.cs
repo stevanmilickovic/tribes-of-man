@@ -38,7 +38,6 @@ public class StructureManager : MonoBehaviour
     private void AddStructure(int id, Structure.Type type, string name, string itemName, int maxHealth, int maxBrokenHealth, string spriteName)
     {
         structures.Add(id, new Structure(type, id, name, ItemManager.Singleton.itemsByName[itemName], maxHealth, maxBrokenHealth, GetSprite(spriteName)));
-        Debug.Log($"Sprite is {GetSprite(spriteName)}");
     }
 
     public Sprite GetSprite(string name)

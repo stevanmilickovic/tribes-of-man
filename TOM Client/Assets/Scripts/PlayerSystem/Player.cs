@@ -9,6 +9,8 @@ public class Player : MonoBehaviour
 
     public int id;
     public string username;
+    public Equipment clothes;
+    public Equipment tools;
 
     public Player(int _id, string _username)
     {

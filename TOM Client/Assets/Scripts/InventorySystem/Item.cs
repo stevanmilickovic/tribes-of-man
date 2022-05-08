@@ -6,7 +6,11 @@ public class Item
     public enum Type
     {
         Weapon,
-        Resource
+        Resource,
+        Tool,
+        Shield,
+        Clothing,
+        Armor
     }
 
     public Type type;

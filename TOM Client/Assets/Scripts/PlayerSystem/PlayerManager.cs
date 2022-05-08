@@ -56,46 +56,54 @@ public class PlayerManager : MonoBehaviour
         RefreshInputs();
     }
 
-    public void SpawnPlayer(int id, string username, Vector2 position)
+    public void SpawnPlayer(int id, string username, Vector2 position, Equipment clothes, Equipment tools)
     {
         if(id == myId)
         {
-            InstantiatePlayer(myPlayerPrefab, id, username, position);
+            InstantiatePlayer(myPlayerPrefab, id, username, position, clothes, tools);
         }
         else
         {
-            InstantiatePlayer(playerPrefab, id, username, position);
+            InstantiatePlayer(playerPrefab, id, username, position, clothes, tools);
         }
     }
 
-    private void InstantiatePlayer(GameObject playerObject ,int id, string username, Vector2 position)
+    private void InstantiatePlayer(GameObject playerObject ,int id, string username, Vector2 position, Equipment clothes, Equipment tools)
     {
         GameObject player = Instantiate(playerObject);
         player.transform.position = new Vector3(position.x, position.y, 0f);
         player.name = username;
-        Player playerScript = SetPlayerScript(player, id, username);
+        Player playerScript = SetPlayerScript(player, id, username, clothes, tools);
         players.Add(id, playerScript);
     }
 
-    private Player SetPlayerScript(GameObject newPlayer, int id, string username)
+    private Player SetPlayerScript(GameObject newPlayer, int id, string username, Equipment clothes, Equipment tools)
     {
         if (id == myId)
-            return SetMyPlayerScript(newPlayer, id, username);
+            return SetMyPlayerScript(newPlayer, id, username, clothes, tools);
+
         Player newPlayerScript = newPlayer.AddComponent<Player>();
         newPlayerScript.username = username;
         newPlayerScript.id = id;
+        newPlayerScript.clothes = clothes;
+        newPlayerScript.tools = tools;
+
         return newPlayerScript;
     }
 
-    private Player SetMyPlayerScript(GameObject newPlayer, int id, string username)
+    private Player SetMyPlayerScript(GameObject newPlayer, int id, string username, Equipment clothes, Equipment tools)
     {
         MyPlayer newPlayerScript = newPlayer.AddComponent<MyPlayer>();
         newPlayerScript.username = username;
         newPlayerScript.id = id;
+        newPlayerScript.clothes = clothes;
+        newPlayerScript.tools = tools;
+
         myPlayer = newPlayerScript;
         mainCamera.transform.SetParent(newPlayer.transform);
         mainCamera.transform.position = newPlayer.transform.position;
         newPlayer.GetComponentInChildren<Transform>().position = newPlayer.transform.position;
+
         return newPlayerScript;
     }
 
@@ -107,9 +115,11 @@ public class PlayerManager : MonoBehaviour
             GameObject oldPlayer = players[id].gameObject;
             Vector2 position = new Vector2(oldPlayer.transform.position.x, oldPlayer.transform.position.y);
             string username = players[id].username;
+            Equipment clothes = players[id].clothes;
+            Equipment tools = players[id].tools;
             Destroy(oldPlayer);
             players.Remove(id);
-            SpawnPlayer(id, username, position);
+            SpawnPlayer(id, username, position, clothes, tools);
         }
     }
 

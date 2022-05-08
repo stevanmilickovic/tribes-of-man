@@ -42,9 +42,8 @@ public class Crafting : MonoBehaviour
         recipes.Add((item1, item2), (result, resultAmount));
     }
 
-    public void Craft(int slot, int tileX, int tileY)
+    public void Craft(Inventory inventory ,int slot, int tileX, int tileY)
     {
-        Inventory inventory = PlayerManager.Singleton.myPlayer.inventory;
         ItemObject item = inventory.slots[slot];
         Tile tile = MapManager.Singleton.tiles[(tileX, tileY)];
 

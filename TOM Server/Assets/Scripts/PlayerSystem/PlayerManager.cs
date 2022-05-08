@@ -90,8 +90,11 @@ public class PlayerManager : MonoBehaviour
         newPlayerScript.name = username;
         newPlayerScript.id = playersById.Count;
         newPlayerScript.inventory = new Inventory(newPlayerScript.id, 9);
+        newPlayerScript.clothes = new Equipment(newPlayerScript.id, 3, new[] { Item.Type.Armor, Item.Type.Clothing });
+        newPlayerScript.tools = new Equipment(newPlayerScript.id, 2, new[] { Item.Type.Weapon, Item.Type.Tool, Item.Type.Shield });
 
         newPlayerScript.inventory.Test();
+        newPlayerScript.tools.Test();
 
         return newPlayerScript;
     }
@@ -123,9 +126,8 @@ public class PlayerManager : MonoBehaviour
     private Message PackPlayerInMessage(Player player)
     {
         Message message = Message.Create(MessageSendMode.reliable, ServerToClientId.spawnPlayer);
-        message.Add(player.id);
-        message.Add(player.name);
-        message.Add(new Vector2(player.gameObject.transform.position.x, player.gameObject.transform.position.y));
+        MessageExtentions.AddPlayer(message, player);
+        
         return message;
     }
 
@@ -198,12 +200,42 @@ public class PlayerManager : MonoBehaviour
 
     public void SwapItems(ushort fromClientId, int slot1, int slot2)
     {
-        Inventory inventory = playersByClientId[fromClientId].inventory;
-        ItemObject swappedItem = inventory.slots[slot1];
-        inventory.slots[slot1] = inventory.slots[slot2];
-        inventory.slots[slot2] = swappedItem;
+        Inventory inventory1 = GetInventory(slot1, fromClientId);
+        Inventory inventory2 = GetInventory(slot2, fromClientId);
+
+        ItemObject item1 = inventory1.slots[GetSlotNumber(slot1)];
+        ItemObject item2 = inventory2.slots[GetSlotNumber(slot2)];
+
+        if (!inventory1.CanAddItem(item2) || !inventory2.CanAddItem(item1))
+        {
+            SendInventoryMessage(playersByClientId[fromClientId], fromClientId);
+            return;
+        }
+
+        inventory1.slots[GetSlotNumber(slot1)] = item2;
+        inventory2.slots[GetSlotNumber(slot2)] = item1;
 
         SendInventoryMessage(playersByClientId[fromClientId], fromClientId);
+    }
+
+    private Inventory GetInventory(int i, ushort fromClientId)
+    {
+        if (i < 9)
+            return playersByClientId[fromClientId].inventory;
+        else if (i < 12)
+            return playersByClientId[fromClientId].clothes;
+        else
+            return playersByClientId[fromClientId].tools;
+    }
+
+    private int GetSlotNumber(int i)
+    {
+        if (i < 9)
+            return i;
+        else if (i < 12)
+            return i - 9;
+        else
+            return i - 12;
     }
 
     public void DropItem(ushort clientId, int slot)

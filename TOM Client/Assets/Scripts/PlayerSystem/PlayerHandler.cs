@@ -11,7 +11,11 @@ public static class PlayerHandler
         int id = message.GetInt();
         string username = message.GetString();
         Vector2 position = message.GetVector2();
-        PlayerManager.Singleton.SpawnPlayer(id, username, position);
+
+        Equipment clothes = MessageExtensions.GetClothes(message);
+        Equipment tools = MessageExtensions.GetTools(message);
+
+        PlayerManager.Singleton.SpawnPlayer(id, username, position, clothes, tools);
     }
 
     [MessageHandler((ushort)ServerToClientId.yourPlayerId)]

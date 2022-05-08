@@ -4,6 +4,20 @@ using UnityEngine;
 public static class MessageExtentions
 {
 
+    public static Message AddItemObject(Message message, ItemObject itemObject)
+    {
+        if (itemObject == null)
+        {
+            message.Add(-1);
+            return message;
+        }
+
+        message.Add(itemObject.item.id);
+        message.Add(itemObject.amount);
+
+        return message;
+    }
+
     public static Message AddInventory(Message message, Inventory inventory) => Add(message, inventory);
 
     public static Message Add(Message message, Inventory inventory)
@@ -12,13 +26,18 @@ public static class MessageExtentions
 
         for(int i = 0; i < inventory.slotNumber; i++)
         {
-            if (inventory.slots[i] == null)
-                message.Add(-1);
-            else
-            {
-                message.Add(inventory.slots[i].item.id);
-                message.Add(inventory.slots[i].amount);
-            }
+            AddItemObject(message, inventory.slots[i]);
+        }
+        return message;
+    }
+
+    public static Message AddEquipment(Message message, Equipment equipment)
+    {
+        message.Add(equipment.slotNumber);
+
+        for (int i = 0; i < equipment.slotNumber; i++)
+        {
+            AddItemObject(message, equipment.slots[i]);
         }
         return message;
     }
@@ -60,20 +79,6 @@ public static class MessageExtentions
         return message;
     }
 
-    public static Message AddItemObject(Message message, ItemObject itemObject)
-    {
-        if (itemObject == null)
-        {
-            message.Add(-1);
-            return message;
-        }
-
-        message.Add(itemObject.item.id);
-        message.Add(itemObject.amount);
-
-        return message;
-    }
-
     public static Message AddStructureObject(Message message, StructureObject structureObject)
     {
         if(structureObject == null)
@@ -86,6 +91,17 @@ public static class MessageExtentions
         message.Add(structureObject.destroyed);
         message.Add(structureObject.health);
         message.Add(structureObject.destroyedHealth);
+
+        return message;
+    }
+
+    public static Message AddPlayer(Message message, Player player)
+    {
+        message.Add(player.id);
+        message.Add(player.name);
+        message.Add(new Vector2(player.gameObject.transform.position.x, player.gameObject.transform.position.y));
+        AddEquipment(message, player.clothes);
+        AddEquipment(message, player.tools);
 
         return message;
     }

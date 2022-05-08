@@ -42,8 +42,6 @@ public class MyPlayer : Player
 
         if (positionError > 0.02f)
         {
-            Debug.Log($"Reconciliation from {states[serverTick % BUFFER_SIZE].position} to {serverPosition}");
-
             states[serverTick % BUFFER_SIZE].position = serverPosition;
             transform.position = serverPosition;
 

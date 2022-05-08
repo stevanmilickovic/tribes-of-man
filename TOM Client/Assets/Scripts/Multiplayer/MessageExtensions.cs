@@ -22,6 +22,40 @@ public static class MessageExtensions
         return new Inventory(slots);
     }
 
+    public static Equipment GetClothes(Message message)
+    {
+        int slotSize = message.GetInt();
+        ItemObject[] slots = new ItemObject[slotSize];
+
+        for (int i = 0; i < slotSize; i++)
+        {
+            int itemId = message.GetInt();
+            if (itemId != -1)
+            {
+                slots[i] = new ItemObject(ItemManager.Singleton.items[itemId], message.GetInt());
+            }
+        }
+
+        return new Equipment(slots, new[] { Item.Type.Clothing, Item.Type.Armor });
+    }
+
+    public static Equipment GetTools(Message message)
+    {
+        int slotSize = message.GetInt();
+        ItemObject[] slots = new ItemObject[slotSize];
+
+        for (int i = 0; i < slotSize; i++)
+        {
+            int itemId = message.GetInt();
+            if (itemId != -1)
+            {
+                slots[i] = new ItemObject(ItemManager.Singleton.items[itemId], message.GetInt());
+            }
+        }
+
+        return new Equipment(slots, new[] { Item.Type.Weapon, Item.Type.Tool, Item.Type.Shield });
+    }
+
     public static Chunk GetChunk(Message message)
     {
         int x = message.GetInt();

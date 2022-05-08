@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using System;
 
 public class Inventory
 {
@@ -8,12 +9,21 @@ public class Inventory
     public readonly int id;
     public readonly int slotNumber;
     public ItemObject[] slots;
+    public Item.Type[] itemTypes;
 
     public Inventory(int _id, int _slotNumber)
     {
         id = _id;
         slotNumber = _slotNumber;
         slots = new ItemObject[slotNumber];
+    }
+
+    public Inventory(int _id, int _slotNumber, Item.Type[] _itemTypes)
+    {
+        id = _id;
+        slotNumber = _slotNumber;
+        slots = new ItemObject[slotNumber];
+        itemTypes = _itemTypes;
     }
 
     public void Test()
@@ -50,6 +60,14 @@ public class Inventory
         }
 
         return false;
+    }
+    public bool CanAddItem(ItemObject itemObject)
+    {
+        if (itemObject == null)
+            return true;
+        if (itemTypes == null)
+            return true;
+        return Array.IndexOf(itemTypes, itemObject.item.type) > -1;
     }
 
     public void ReduceSlotAmount(int slot)
