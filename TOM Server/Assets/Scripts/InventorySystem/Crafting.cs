@@ -46,7 +46,7 @@ public class Crafting : MonoBehaviour
     public void Craft(ushort clientId, int slot, int tileX, int tileY)
     {
         Player player = PlayerManager.Singleton.playersByClientId[clientId];
-        ItemObject item = player.inventory.slots[slot];
+        ItemObject item = PlayerManager.Singleton.GetItemObjectFromPlayer(player, slot);
         Tile tile = MapManager.Singleton.map.tiles[tileX, tileY];
         Tile droppedTile = null;
 
@@ -56,7 +56,7 @@ public class Crafting : MonoBehaviour
             if (tile.itemObject.amount == 1)
             {
                 tile.itemObject = craftedObject;
-                player.inventory.ReduceSlotAmount(slot);
+                PlayerManager.Singleton.GetPlayerInventoryBySlot(player, slot).ReduceSlotAmount(PlayerManager.Singleton.GetRelativeSlotNumber(slot));
             }
             else
             {
@@ -64,7 +64,7 @@ public class Crafting : MonoBehaviour
                 if(droppedTile != null)
                 {
                     tile.itemObject.amount -= 1;
-                    player.inventory.ReduceSlotAmount(slot);
+                    PlayerManager.Singleton.GetPlayerInventoryBySlot(player, slot).ReduceSlotAmount(PlayerManager.Singleton.GetRelativeSlotNumber(slot));
                 }
             }
         }

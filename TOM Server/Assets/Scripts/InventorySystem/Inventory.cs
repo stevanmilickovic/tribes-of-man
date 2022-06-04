@@ -31,6 +31,7 @@ public class Inventory
         slots[0] = new ItemObject(ItemManager.Singleton.items[0], 1);
         slots[1] = new ItemObject(ItemManager.Singleton.items[0], 1);
         slots[2] = new ItemObject(ItemManager.Singleton.items[1], 2);
+        slots[3] = new ItemObject(ItemManager.Singleton.items[2], 1);
     }
 
     public bool Add(ItemObject itemObject)

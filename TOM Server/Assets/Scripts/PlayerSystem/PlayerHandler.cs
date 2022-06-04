@@ -49,4 +49,12 @@ public static class PlayerHandler
         PlayerManager.Singleton.CraftItems(fromClientId, slot, tileX, tileY);
     }
 
+    [MessageHandler((ushort)ClientToServerId.attack)]
+    public static void PlayerAttack(ushort fromClientId, Message message)
+    {
+        Vector2 direction = message.GetVector2();
+        ushort tick = message.GetUShort();
+        PlayerManager.Singleton.PlayerAttack(fromClientId, direction, tick);
+    }
+
 }

@@ -118,6 +118,7 @@ public class DisplayInventory : MonoBehaviour
         }
         Destroy(mouseItem.obj);
         mouseItem.slot = null;
+        PlayerManager.Singleton.myPlayer.CheckEquipment();
     }
     public void OnDrag(GameObject obj)
     {

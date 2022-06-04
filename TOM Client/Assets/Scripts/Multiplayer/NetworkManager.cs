@@ -10,7 +10,8 @@ public enum ClientToServerId : ushort
     pickup,
     craft,
     swap,
-    drop
+    drop,
+    attack
 }
 public enum ServerToClientId : ushort
 {

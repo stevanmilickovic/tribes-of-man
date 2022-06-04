@@ -31,13 +31,28 @@ public class ItemManager : MonoBehaviour
 
     public void InitializeItems()
     {
-        AddItem(Item.Type.Weapon, 0, "stick", false);
-        AddItem(Item.Type.Resource, 1, "wood", true);
+        AddToolItem(0, "stick", false, 5);
+        AddItem(1, Item.Type.Resource, "wood", true);
+        AddWeaponItem(2, "sword", false, 10);
     }
 
-    private void AddItem(Item.Type type, int id, string name, bool stackable)
+    private void AddItem(int id, Item.Type type, string name, bool stackable)
     {
         Item newItem = new Item(type, id, name, stackable);
+        items.Add(id, newItem);
+        itemsByName.Add(name, newItem);
+    }
+
+    private void AddWeaponItem(int id, string name, bool isStackable, int damage)
+    {
+        WeaponItem newItem = new WeaponItem(id, name, isStackable, damage);
+        items.Add(id, newItem);
+        itemsByName.Add(name, newItem);
+    }
+
+    private void AddToolItem(int id, string name, bool isStackable, int effect)
+    {
+        ToolItem newItem = new ToolItem(id, name, isStackable, effect);
         items.Add(id, newItem);
         itemsByName.Add(name, newItem);
     }

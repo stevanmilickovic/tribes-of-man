@@ -97,7 +97,7 @@ public class MapManager : MonoBehaviour
     {
         Tile tile = map.tiles[x, y];
 
-        if(TryToDrop(tile, itemObject))
+        if(TryToTakeItem(tile, itemObject))
         {
             return tile;
         }
@@ -108,7 +108,7 @@ public class MapManager : MonoBehaviour
             {
                 if (_x >= 0 && _y >= 0 && _x < map.tiles.GetLength(0) && _y < map.tiles.GetLength(1))
                 {
-                    if (TryToDrop(map.tiles[_x, _y], itemObject))
+                    if (TryToTakeItem(map.tiles[_x, _y], itemObject))
                         return (map.tiles[_x, _y]);
                 }
             }
@@ -117,7 +117,7 @@ public class MapManager : MonoBehaviour
         return null;
     }
 
-    private bool TryToDrop(Tile tile, ItemObject itemObject)
+    private bool TryToTakeItem(Tile tile, ItemObject itemObject)
     {
         if (tile.itemObject == null)
         {

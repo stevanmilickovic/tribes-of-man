@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using RiptideNetworking;
 using System;
+using TMPro;
 
 public class PlayerManager : MonoBehaviour
 {
@@ -25,6 +26,7 @@ public class PlayerManager : MonoBehaviour
 
     [SerializeField] private GameObject playerPrefab;
     [SerializeField] private GameObject myPlayerPrefab;
+    private GameObject hit;
     [SerializeField] private Interpolator interpolator;
     public MyPlayer myPlayer;
     public Dictionary<int, Player> players;
@@ -33,6 +35,7 @@ public class PlayerManager : MonoBehaviour
     private int awaitedInventoryUpdates = 0;
 
     public Camera mainCamera;
+    public bool cinematicMode;
 
     private void Awake()
     {
@@ -42,9 +45,37 @@ public class PlayerManager : MonoBehaviour
 
     private void Update()
     {
+        Aim();
+        HandleInputs();
+    }
+
+    private void HandleInputs()
+    {
         GetInputs();
         if (Input.GetKey(KeyCode.Mouse1))
             Pickup();
+        if (Input.GetKeyDown(KeyCode.Mouse0))
+            Attact();
+    }
+
+    private void Aim()
+    {
+        if (hit == null) return;
+        Vector2 mouseScreenPosition = mainCamera.ScreenToWorldPoint(Input.mousePosition);
+        Vector2 direction = (mouseScreenPosition - (Vector2)hit.transform.position).normalized;
+        hit.transform.right = direction;
+    }
+
+    private void Attact()
+    {
+        if (hit == null) return;
+        Vector2 direction = hit.transform.right;
+        ushort tick = NetworkManager.Singleton.ServerTick;
+
+        Message message = Message.Create(MessageSendMode.unreliable, ClientToServerId.attack);
+        message.Add(direction);
+        message.Add(tick);
+        NetworkManager.Singleton.Client.Send(message);
     }
 
     private void FixedUpdate()
@@ -56,28 +87,29 @@ public class PlayerManager : MonoBehaviour
         RefreshInputs();
     }
 
-    public void SpawnPlayer(int id, string username, Vector2 position, Equipment clothes, Equipment tools)
+    public void SpawnPlayer(int id, string username, Vector2 position, int health, Equipment clothes, Equipment tools)
     {
         if(id == myId)
         {
-            InstantiatePlayer(myPlayerPrefab, id, username, position, clothes, tools);
+            InstantiatePlayer(myPlayerPrefab, id, username, position, health, clothes, tools);
         }
         else
         {
-            InstantiatePlayer(playerPrefab, id, username, position, clothes, tools);
+            InstantiatePlayer(playerPrefab, id, username, position, health, clothes, tools);
         }
     }
 
-    private void InstantiatePlayer(GameObject playerObject ,int id, string username, Vector2 position, Equipment clothes, Equipment tools)
+    private void InstantiatePlayer(GameObject playerObject ,int id, string username, Vector2 position, int health, Equipment clothes, Equipment tools)
     {
         GameObject player = Instantiate(playerObject);
         player.transform.position = new Vector3(position.x, position.y, 0f);
         player.name = username;
-        Player playerScript = SetPlayerScript(player, id, username, clothes, tools);
+        Player playerScript = SetPlayerScript(player, id, username, health, clothes, tools);
+        playerScript.nameText.GetComponent<TextMeshPro>().text = username;
         players.Add(id, playerScript);
     }
 
-    private Player SetPlayerScript(GameObject newPlayer, int id, string username, Equipment clothes, Equipment tools)
+    private Player SetPlayerScript(GameObject newPlayer, int id, string username, int health, Equipment clothes, Equipment tools)
     {
         if (id == myId)
             return SetMyPlayerScript(newPlayer, id, username, clothes, tools);
@@ -85,8 +117,15 @@ public class PlayerManager : MonoBehaviour
         Player newPlayerScript = newPlayer.AddComponent<Player>();
         newPlayerScript.username = username;
         newPlayerScript.id = id;
+        newPlayerScript.health = health;
         newPlayerScript.clothes = clothes;
         newPlayerScript.tools = tools;
+
+        newPlayerScript.nameText = newPlayer.transform.GetChild(1).gameObject;
+        newPlayerScript.healthText = newPlayer.transform.GetChild(2).gameObject;
+        newPlayerScript.leftArm = newPlayer.transform.GetChild(3).gameObject;
+        newPlayerScript.rightArm = newPlayer.transform.GetChild(4).gameObject;
+
 
         return newPlayerScript;
     }
@@ -99,10 +138,20 @@ public class PlayerManager : MonoBehaviour
         newPlayerScript.clothes = clothes;
         newPlayerScript.tools = tools;
 
+        newPlayerScript.nameText = newPlayer.transform.GetChild(2).gameObject;
+        newPlayerScript.healthText = newPlayer.transform.GetChild(3).gameObject;
+        newPlayerScript.leftArm = newPlayer.transform.GetChild(4).gameObject;
+        newPlayerScript.rightArm = newPlayer.transform.GetChild(5).gameObject;
+
         myPlayer = newPlayerScript;
-        mainCamera.transform.SetParent(newPlayer.transform);
-        mainCamera.transform.position = newPlayer.transform.position;
-        newPlayer.GetComponentInChildren<Transform>().position = newPlayer.transform.position;
+        if (!cinematicMode)
+        {
+            mainCamera.transform.SetParent(newPlayer.transform);
+            mainCamera.transform.position = newPlayer.transform.position;
+        }
+        newPlayer.GetComponentInChildren<Transform>().position = newPlayer.transform.position; //Possible difficulties with children position
+
+        hit = newPlayer.transform.GetChild(1).gameObject;
 
         return newPlayerScript;
     }
@@ -113,13 +162,17 @@ public class PlayerManager : MonoBehaviour
         if(players.ContainsKey(id))
         {
             GameObject oldPlayer = players[id].gameObject;
+
             Vector2 position = new Vector2(oldPlayer.transform.position.x, oldPlayer.transform.position.y);
             string username = players[id].username;
+            int health = players[id].health;
             Equipment clothes = players[id].clothes;
             Equipment tools = players[id].tools;
+
             Destroy(oldPlayer);
             players.Remove(id);
-            SpawnPlayer(id, username, position, clothes, tools);
+
+            SpawnPlayer(id, username, position, health, clothes, tools);
         }
     }
 
@@ -133,6 +186,20 @@ public class PlayerManager : MonoBehaviour
         }
     }
 
+    public void UpdatePlayerHealth(int id, int health)
+    {
+        if (players.TryGetValue(id, out Player player) && id != myId)
+        {
+            player.health = health;
+            player.healthText.GetComponent<TextMeshPro>().text = health.ToString();
+        }
+        else if (id == myId)
+        {
+            myPlayer.health = health;
+            myPlayer.healthText.GetComponent<TextMeshPro>().text = health.ToString();
+        }
+    }
+
     #region Inventory
 
     public void UpdateInventory(Inventory inventory)
@@ -140,6 +207,7 @@ public class PlayerManager : MonoBehaviour
         if(awaitedInventoryUpdates <= 1)
             myPlayer.inventory = inventory;
         awaitedInventoryUpdates--;
+        myPlayer.CheckEquipment();
     }
 
     public void Pickup()

@@ -89,12 +89,16 @@ public class PlayerManager : MonoBehaviour
         newPlayerScript.currectClientId = clientId;
         newPlayerScript.name = username;
         newPlayerScript.id = playersById.Count;
+        newPlayerScript.health = 100;
+        newPlayerScript.pivot = newPlayer.transform.GetChild(1).gameObject;
+        newPlayerScript.hit = newPlayerScript.pivot.transform.GetChild(0).GetComponent<Hit>();
         newPlayerScript.inventory = new Inventory(newPlayerScript.id, 9);
         newPlayerScript.clothes = new Equipment(newPlayerScript.id, 3, new[] { Item.Type.Armor, Item.Type.Clothing });
         newPlayerScript.tools = new Equipment(newPlayerScript.id, 2, new[] { Item.Type.Weapon, Item.Type.Tool, Item.Type.Shield });
 
         newPlayerScript.inventory.Test();
         newPlayerScript.tools.Test();
+        newPlayerScript.CheckEquipment();
 
         return newPlayerScript;
     }
@@ -104,6 +108,7 @@ public class PlayerManager : MonoBehaviour
         Message message = Message.Create(MessageSendMode.reliable, ServerToClientId.playerInventory);
         MessageExtentions.Add(message, player.inventory);
         NetworkManager.Singleton.Server.Send(message, clientId);
+        playersByClientId[clientId].CheckEquipment();
     }
 
     private void SendYourIdMessage(Player player, ushort clientId)
@@ -183,6 +188,7 @@ public class PlayerManager : MonoBehaviour
         message.AddInt(player.id);
         message.AddUShort(NetworkManager.Singleton.CurrentTick);
         message.AddVector2(new Vector2(player.gameObject.transform.position.x, player.gameObject.transform.position.y));
+        message.AddInt(player.health);
         NetworkManager.Singleton.Server.SendToAll(message);
     }
 
@@ -241,7 +247,7 @@ public class PlayerManager : MonoBehaviour
     public void DropItem(ushort clientId, int slot)
     {
         Player player = playersByClientId[clientId];
-        ItemObject itemObject = player.inventory.slots[slot];
+        ItemObject itemObject = GetItemObjectFromPlayer(player, slot);
         if (itemObject == null)
             return;
 
@@ -249,15 +255,74 @@ public class PlayerManager : MonoBehaviour
 
         if (tile != null)
         {
-            player.inventory.slots[slot] = null;
+            EmptyPlayerInventorySlot(player, slot);
             MapManager.Singleton.SendTileMessage(tile);
         }
         SendInventoryMessage(player, clientId);
+    }
+
+    public ItemObject GetItemObjectFromPlayer(Player player, int slot)
+    {
+        if (slot < 9)
+            return player.inventory.slots[GetRelativeSlotNumber(slot)];
+        if (slot < 12)
+            return player.clothes.slots[GetRelativeSlotNumber(slot)];
+        if (slot < 14)
+            return player.tools.slots[GetRelativeSlotNumber(slot)];
+        return null;
+    }
+
+    public Inventory GetPlayerInventoryBySlot(Player player, int slot)
+    {
+        if (slot < 9)
+            return player.inventory;
+        if (slot < 12)
+            return player.clothes;
+        if (slot < 14)
+            return player.tools;
+        return null;
+    }
+
+    public int GetRelativeSlotNumber(int slot)
+    {
+        if (slot < 9)
+            return slot;
+        if (slot < 12)
+            return slot - 9;
+        if (slot < 14)
+            return slot - 12;
+        return -1;
+    }
+
+    private void EmptyPlayerInventorySlot(Player player, int slot)
+    {
+        if (slot < 9)
+        {
+            player.inventory.slots[GetRelativeSlotNumber(slot)] = null;
+            return;
+        }
+        if (slot < 12)
+        {
+            player.clothes.slots[GetRelativeSlotNumber(slot)] = null;
+            return;
+        }
+        if (slot < 14)
+        {
+            player.tools.slots[GetRelativeSlotNumber(slot)] = null;
+            return;
+        }
     }
 
     public void CraftItems(ushort clientId, int slot, int tileX, int tileY)
     {
 
         Crafting.Singleton.Craft(clientId, slot, tileX, tileY);
+    }
+
+    public void PlayerAttack(ushort clientId, Vector2 direction, ushort tick)
+    {
+        Player player = playersByClientId[clientId];
+        player.pivot.transform.right = direction;
+        player.Attack(direction);
     }
 }

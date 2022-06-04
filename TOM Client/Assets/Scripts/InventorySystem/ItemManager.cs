@@ -33,13 +33,30 @@ public class ItemManager : MonoBehaviour
 
     public void InitializeItems()
     {
-        AddItem(0, Item.Type.Weapon, "stick", false, "stick");
-        AddItem(1, Item.Type.Resource, "wood", false, "wood");
+        AddToolItem(0, "stick", false, "stick", 5);
+        AddItem(1, Item.Type.Resource, "wood", true, "wood");
+        AddWeaponItem(2, "sword", false, "sword", 10);
     }
 
     private Item AddItem(int id, Item.Type type, string name, bool isStackable, string spriteName)
     {
         Item newItem = new Item(type, id, name, isStackable, GetSprite(spriteName));
+        items.Add(id, newItem);
+        itemsByName.Add(name, newItem);
+        return newItem;
+    }
+
+    private WeaponItem AddWeaponItem(int id, string name, bool isStackable, string spriteName, int damage)
+    {
+        WeaponItem newItem = new WeaponItem(id, name, isStackable, GetSprite(spriteName), damage);
+        items.Add(id, newItem);
+        itemsByName.Add(name, newItem);
+        return newItem;
+    }
+
+    private ToolItem AddToolItem(int id, string name, bool isStackable, string spriteName, int effect)
+    {
+        ToolItem newItem = new ToolItem(id, name, isStackable, GetSprite(spriteName), effect);
         items.Add(id, newItem);
         itemsByName.Add(name, newItem);
         return newItem;
