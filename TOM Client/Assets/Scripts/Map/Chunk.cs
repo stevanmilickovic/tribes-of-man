@@ -9,12 +9,14 @@ public class Chunk
     public int y;
 
     public Tile[,] tiles = new Tile[50, 50];
+    public Dictionary<int, Player> players;
 
     public Chunk(int _x, int _y, Tile[,] _tiles)
     {
         x = _x;
         y = _y;
         tiles = _tiles;
+        players = new Dictionary<int, Player>();
     }
 
 }

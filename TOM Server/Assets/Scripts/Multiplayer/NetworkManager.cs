@@ -21,7 +21,8 @@ public enum ServerToClientId : ushort
     playerPosition,
     chunk,
     tile,
-    playerInventory
+    playerInventory,
+    playerEquipment
 }
 
 public class NetworkManager : MonoBehaviour

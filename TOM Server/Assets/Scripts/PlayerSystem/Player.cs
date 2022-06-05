@@ -14,7 +14,7 @@ public class Player : MonoBehaviour
     }
 
     public int id;
-    public ushort currectClientId;
+    public ushort currentClientId;
     public string playerName;
     public int health;
     public GameObject pivot;
@@ -23,11 +23,17 @@ public class Player : MonoBehaviour
     public Equipment clothes;
     public Equipment tools;
     public EquipmentType equipmentType;
+    public Chunk currentChunk;
+
+    private void Update()
+    {
+        UpdateChunk();
+    }
 
     public Player(int _id, ushort _currectClientId, string _playerName)
     {
         id = _id;
-        currectClientId = _currectClientId;
+        currentClientId = _currectClientId;
         playerName = _playerName;
     }
 
@@ -52,5 +58,24 @@ public class Player : MonoBehaviour
                 equipmentType = EquipmentType.HoldingTool;
             }
         }
+    }
+
+    public void UpdateChunk()
+    {
+        if (currentChunk != MapUtil.GetChunk(transform.position))
+        {
+            if (currentChunk != null)
+            {
+                currentChunk.RemovePlayer(this);
+                Debug.Log(currentChunk.HasPlayer(this));
+            }
+
+
+            currentChunk = MapUtil.GetChunk(transform.position);
+            currentChunk.AddPlayer(this);
+
+            PlayerSend.SendBasicRelevantInformation(this, currentClientId);
+        }
+        PlayerSend.SendRelevantPlayerPosition(this, currentClientId);
     }
 }

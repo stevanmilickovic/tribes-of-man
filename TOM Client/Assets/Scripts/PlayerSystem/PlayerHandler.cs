@@ -13,7 +13,6 @@ public static class PlayerHandler
         Vector2 position = message.GetVector2();
 
         int health = message.GetInt();
-        Debug.Log(health);
 
         Equipment clothes = MessageExtensions.GetClothes(message);
         Equipment tools = MessageExtensions.GetTools(message);

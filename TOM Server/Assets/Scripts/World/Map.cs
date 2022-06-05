@@ -13,7 +13,7 @@ public class Map
     public Map(int mapWidth, int mapHeight, float[,] noise)
     {
         tiles = new Tile[mapWidth, mapHeight];
-        chunks = new Chunk[(int)Mathf.Ceil((float)(mapWidth) / 50), (int)Mathf.Ceil((float)(mapHeight) / 50)];
+        chunks = new Chunk[(int)Mathf.Ceil((float)(mapWidth) / 10), (int)Mathf.Ceil((float)(mapHeight) / 10)];
 
         for (int y = 0; y < chunks.GetLength(1); y++)
         {
@@ -36,26 +36,26 @@ public class Map
 
     private void GenerateChunk(int x, int y, int mapWidth, int mapHeight)
     {
-        chunks[x, y] = new Chunk(x, y, new Tile[50, 50]);
+        chunks[x, y] = new Chunk(x, y, new Tile[10, 10]);
 
-        if ((x + 1) * 50 > mapWidth && !((y + 1) * 50 > mapHeight))
+        if ((x + 1) * 10 > mapWidth && !((y + 1) * 10 > mapHeight))
         {
-            chunks[x, y] = new Chunk(x, y, new Tile[mapWidth - x * 50, 50]);
+            chunks[x, y] = new Chunk(x, y, new Tile[mapWidth - x * 10, 10]);
         }
-        if ((y + 1) * 50 > mapHeight && !((x + 1) * 50 > mapWidth))
+        if ((y + 1) * 10 > mapHeight && !((x + 1) * 10 > mapWidth))
         {
-            chunks[x, y] = new Chunk(x, y, new Tile[50, mapHeight - y * 50]);
+            chunks[x, y] = new Chunk(x, y, new Tile[10, mapHeight - y * 10]);
         }
-        if ((x + 1) * 50 > mapWidth && (y + 1) * 50 > mapHeight)
+        if ((x + 1) * 10 > mapWidth && (y + 1) * 10 > mapHeight)
         {
-            chunks[x, y] = new Chunk(x, y, new Tile[mapWidth - x * 50, mapHeight - y * 50]);
+            chunks[x, y] = new Chunk(x, y, new Tile[mapWidth - x * 10, mapHeight - y * 10]);
         }
     }
 
     private void GenerateTile(int x, int y, float[,] noise)
     {
         tiles[x, y] = new Tile(x, y, SetTerrain(noise[x, y]));
-        chunks[(int)Mathf.Floor((float)x / 50), (int)Mathf.Floor((float)y / 50)].tiles[x % 50, y % 50] = tiles[x, y];
+        chunks[(int)Mathf.Floor((float)x / 10), (int)Mathf.Floor((float)y / 10)].tiles[x % 10, y % 10] = tiles[x, y];
     }
 
     public TerrainTypes SetTerrain(float noise)

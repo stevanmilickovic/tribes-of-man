@@ -9,6 +9,7 @@ public class MyPlayer : Player
     private bool[] inputs = new bool[4];
     private static int BUFFER_SIZE = 1024;
     private State[] states = new State[BUFFER_SIZE];
+    public Chunk currentChunk;
 
     public MyPlayer(int _id, string _username) : base(_id, _username) { }
 
@@ -21,6 +22,7 @@ public class MyPlayer : Player
     private void Update()
     {
         GetInputs();
+        UpdateChunk();
     }
 
     private void FixedUpdate()
@@ -103,5 +105,18 @@ public class MyPlayer : Player
         if (inputs[3])
             inputDirection.x += 1;
         return inputDirection;
+    }
+
+    public void UpdateChunk()
+    {
+        //Debug.Log($"Current Chunk is {currentChunk.x}, {currentChunk.y}");
+        if (currentChunk != MapUtil.GetChunk(transform.position))
+        {
+            if (currentChunk != null)
+            {
+                MapManager.Singleton.UpdateRelevantChunks(currentChunk, MapUtil.GetChunk(transform.position));
+            }
+            currentChunk = MapUtil.GetChunk(transform.position);
+        }
     }
 }

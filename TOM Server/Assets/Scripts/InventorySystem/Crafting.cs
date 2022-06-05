@@ -46,7 +46,7 @@ public class Crafting : MonoBehaviour
     public void Craft(ushort clientId, int slot, int tileX, int tileY)
     {
         Player player = PlayerManager.Singleton.playersByClientId[clientId];
-        ItemObject item = PlayerManager.Singleton.GetItemObjectFromPlayer(player, slot);
+        ItemObject item = InventoryUtil.GetItemObjectFromPlayer(player, slot);
         Tile tile = MapManager.Singleton.map.tiles[tileX, tileY];
         Tile droppedTile = null;
 
@@ -56,7 +56,7 @@ public class Crafting : MonoBehaviour
             if (tile.itemObject.amount == 1)
             {
                 tile.itemObject = craftedObject;
-                PlayerManager.Singleton.GetPlayerInventoryBySlot(player, slot).ReduceSlotAmount(PlayerManager.Singleton.GetRelativeSlotNumber(slot));
+                InventoryUtil.GetPlayerInventoryBySlot(player, slot).ReduceSlotAmount(InventoryUtil.GetRelativeSlotNumber(slot));
             }
             else
             {
@@ -64,15 +64,15 @@ public class Crafting : MonoBehaviour
                 if(droppedTile != null)
                 {
                     tile.itemObject.amount -= 1;
-                    PlayerManager.Singleton.GetPlayerInventoryBySlot(player, slot).ReduceSlotAmount(PlayerManager.Singleton.GetRelativeSlotNumber(slot));
+                    InventoryUtil.GetPlayerInventoryBySlot(player, slot).ReduceSlotAmount(InventoryUtil.GetRelativeSlotNumber(slot));
                 }
             }
         }
 
         if (droppedTile != null)
-            MapManager.Singleton.SendTileMessage(droppedTile);
-        MapManager.Singleton.SendTileMessage(tile);
-        PlayerManager.Singleton.SendInventoryMessage(player, clientId);
+            MapSend.SendTileMessage(droppedTile);
+        MapSend.SendTileMessage(tile);
+        PlayerSend.SendInventoryMessage(player, clientId);
     }
 
     private ItemObject GetRecipe(ItemObject item1, ItemObject item2)

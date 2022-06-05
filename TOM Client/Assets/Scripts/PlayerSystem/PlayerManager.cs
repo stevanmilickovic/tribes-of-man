@@ -101,12 +101,19 @@ public class PlayerManager : MonoBehaviour
 
     private void InstantiatePlayer(GameObject playerObject ,int id, string username, Vector2 position, int health, Equipment clothes, Equipment tools)
     {
+
+        if (players.ContainsKey(id)) return;
+
         GameObject player = Instantiate(playerObject);
         player.transform.position = new Vector3(position.x, position.y, 0f);
         player.name = username;
         Player playerScript = SetPlayerScript(player, id, username, health, clothes, tools);
         playerScript.nameText.GetComponent<TextMeshPro>().text = username;
+        playerScript.CheckEquipment();
         players.Add(id, playerScript);
+
+        if (id != myId)
+            MapUtil.GetChunk(position).players.Add(id, playerScript);
     }
 
     private Player SetPlayerScript(GameObject newPlayer, int id, string username, int health, Equipment clothes, Equipment tools)

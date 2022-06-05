@@ -71,28 +71,6 @@ public class MapManager : MonoBehaviour
         }
     }
 
-    public void SendAllChunks(ushort clientId)
-    {
-        foreach (Chunk chunk in map.chunks)
-        {
-            SendChunkMessage(clientId, chunk);
-        }
-    }
-
-    public void SendChunkMessage(ushort clientId, Chunk chunk)
-    {
-        Message message = Message.Create(MessageSendMode.reliable, ServerToClientId.chunk);
-        MessageExtentions.Add(message, chunk);
-        NetworkManager.Singleton.Server.Send(message, clientId);
-    }
-
-    public void SendTileMessage(Tile tile)
-    {
-        Message message = Message.Create(MessageSendMode.reliable, ServerToClientId.tile);
-        MessageExtentions.Add(message, tile);
-        NetworkManager.Singleton.Server.SendToAll(message);
-    }
-
     public Tile DropItem(int x, int y, ItemObject itemObject)
     {
         Tile tile = map.tiles[x, y];

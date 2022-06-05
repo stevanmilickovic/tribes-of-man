@@ -73,7 +73,6 @@ public static class MessageExtensions
                 tiles[_x, _y] = GetTile(message);
             }
         }
-
         return new Chunk(x, y, tiles);
     }
 

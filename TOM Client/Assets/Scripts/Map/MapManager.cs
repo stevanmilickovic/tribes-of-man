@@ -39,6 +39,7 @@ public class MapManager : MonoBehaviour
     private Dictionary<(int, int), GameObject> spawnedItems;
     private Dictionary<(int, int), GameObject> spawnedStructures; 
     public Dictionary<(int, int), Chunk> chunks;
+    public Dictionary<(int, int), GameObject> chunkObjects;
     public Dictionary<(int, int), Tile> tiles;
 
     private void Awake()
@@ -49,6 +50,7 @@ public class MapManager : MonoBehaviour
     private void Start()
     {
         chunks = new Dictionary<(int, int), Chunk>();
+        chunkObjects = new Dictionary<(int, int), GameObject>();
         tiles = new Dictionary<(int, int), Tile>();
         spawnedItems = new Dictionary<(int, int), GameObject>();
         spawnedStructures = new Dictionary<(int, int), GameObject>();
@@ -56,12 +58,58 @@ public class MapManager : MonoBehaviour
 
     public void CreateChunk(Chunk chunk)
     {
+        if (chunks.ContainsKey((chunk.x, chunk.y)))
+            return;
         chunks.Add((chunk.x, chunk.y), chunk);
 
+
         GameObject newChunk = Instantiate(chunkPrefab);
-        newChunk.transform.Translate(chunk.x * 50, chunk.y * 50, 0f);
+        newChunk.transform.Translate(chunk.x * 10, chunk.y * 10, 0f);
+        chunkObjects.Add((chunk.x, chunk.y), newChunk);
 
         DrawTiles(chunk, newChunk.GetComponent<MeshFilter>().mesh);
+    }
+
+    public void UpdateRelevantChunks(Chunk oldChunk, Chunk newChunk)
+    {
+        int differenceX = oldChunk.x - newChunk.x;
+        int differenceY = oldChunk.y - newChunk.y;
+
+        if (differenceX != 0)
+        {
+            for (int y = oldChunk.y - 1; y <= oldChunk.y + 1; y++)
+            {
+                if (chunks.ContainsKey((oldChunk.x + differenceX, y)))
+                {
+                    DestroyPlayersInChunk(chunks[(oldChunk.x + differenceX, y)]);
+                    chunks.Remove((oldChunk.x + differenceX, y));
+                    Destroy(chunkObjects[(oldChunk.x + differenceX, y)]);
+                    chunkObjects.Remove((oldChunk.x + differenceX, y));
+                }
+            }
+        }
+        if (differenceY != 0)
+        {
+            for (int x = oldChunk.x - 1; x <= oldChunk.x + 1; x++)
+            {
+                if (chunks.ContainsKey((x, oldChunk.y + differenceY)))
+                {
+                    DestroyPlayersInChunk(chunks[(x, oldChunk.y + differenceY)]);
+                    chunks.Remove((x, oldChunk.y + differenceY));
+                    Destroy(chunkObjects[(x, oldChunk.y + differenceY)]);
+                    chunkObjects.Remove((x, oldChunk.y + differenceY));
+                }
+            }
+        }
+    }
+
+    private void DestroyPlayersInChunk(Chunk chunk)
+    {
+        foreach (KeyValuePair<int, Player> player in chunk.players)
+        {
+            Destroy(player.Value.gameObject);
+            PlayerManager.Singleton.players.Remove(player.Value.id);
+        }
     }
 
     private void DrawTiles(Chunk chunk, Mesh mesh)
@@ -99,6 +147,7 @@ public class MapManager : MonoBehaviour
 
     private void AddTile(int x, int y, Chunk chunk)
     {
+        if (tiles.ContainsKey((chunk.tiles[x, y].x, chunk.tiles[x, y].y))) return;
         tiles.Add((chunk.tiles[x, y].x, chunk.tiles[x, y].y), chunk.tiles[x, y]);
     }
 
