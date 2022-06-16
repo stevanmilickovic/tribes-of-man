@@ -81,7 +81,7 @@ public class MapManager : MonoBehaviour
             {
                 if (chunks.ContainsKey((oldChunk.x + differenceX, y)))
                 {
-                    DestroyPlayersInChunk(chunks[(oldChunk.x + differenceX, y)]);
+                    DestroyEntitiesInChunk(chunks[(oldChunk.x + differenceX, y)]);
                     chunks.Remove((oldChunk.x + differenceX, y));
                     Destroy(chunkObjects[(oldChunk.x + differenceX, y)]);
                     chunkObjects.Remove((oldChunk.x + differenceX, y));
@@ -94,7 +94,7 @@ public class MapManager : MonoBehaviour
             {
                 if (chunks.ContainsKey((x, oldChunk.y + differenceY)))
                 {
-                    DestroyPlayersInChunk(chunks[(x, oldChunk.y + differenceY)]);
+                    DestroyEntitiesInChunk(chunks[(x, oldChunk.y + differenceY)]);
                     chunks.Remove((x, oldChunk.y + differenceY));
                     Destroy(chunkObjects[(x, oldChunk.y + differenceY)]);
                     chunkObjects.Remove((x, oldChunk.y + differenceY));
@@ -103,12 +103,22 @@ public class MapManager : MonoBehaviour
         }
     }
 
-    private void DestroyPlayersInChunk(Chunk chunk)
+    private void DestroyEntitiesInChunk(Chunk chunk)
     {
         foreach (KeyValuePair<int, Player> player in chunk.players)
         {
             Destroy(player.Value.gameObject);
             PlayerManager.Singleton.players.Remove(player.Value.id);
+        }
+        foreach (KeyValuePair<(int, int), GameObject> spawnedItem in chunk.spawnedItems)
+        {
+            Destroy(spawnedItem.Value);
+            spawnedItems.Remove(spawnedItem.Key);
+        }
+        foreach (KeyValuePair<(int, int), GameObject> spawnedStructure in chunk.spawnedStructures)
+        {
+            Destroy(spawnedStructure.Value);
+            spawnedStructures.Remove(spawnedStructure.Key);
         }
     }
 
@@ -231,15 +241,16 @@ public class MapManager : MonoBehaviour
 
         if(tile.itemObject != null)
         {
-            SpawnItem(tile.x, tile.y, tile.itemObject);
+            chunks[(tile.x/10, tile.y/10)].spawnedItems.Add((tile.x, tile.y), SpawnItem(tile.x, tile.y, tile.itemObject));
         }
     }
 
-    public void SpawnItem(int x, int y, ItemObject itemObject)
+    public GameObject SpawnItem(int x, int y, ItemObject itemObject)
     {
         spawnedItems[(x, y)] = Instantiate(itemObjectPrefab);
         spawnedItems[(x, y)].transform.position = new Vector3(x + 0.5f, y + 0.5f, 0f);
         spawnedItems[(x, y)].GetComponentInChildren<SpriteRenderer>().sprite = itemObject.item.sprite;
+        return spawnedItems[(x, y)];
     }
 
     public void UpdateTileStructureObject(Tile tile)
@@ -252,15 +263,16 @@ public class MapManager : MonoBehaviour
 
         if (tile.structureObject != null)
         {
-            SpawnStructure(tile.x, tile.y, tile.structureObject);
+            chunks[(tile.x / 10, tile.y / 10)].spawnedStructures.Add((tile.x, tile.y), SpawnStructure(tile.x, tile.y, tile.structureObject));
         }
     }
 
-    private void SpawnStructure(int x, int y, StructureObject structureObject)
+    private GameObject SpawnStructure(int x, int y, StructureObject structureObject)
     {
         spawnedStructures[(x, y)] = Instantiate(structureObjectPrefab);
         spawnedStructures[(x, y)].transform.position = new Vector3(x + 0.5f, y + 0.5f, 0f);
         spawnedStructures[(x, y)].GetComponentInChildren<SpriteRenderer>().sprite = structureObject.structure.sprite;
+        return spawnedStructures[(x, y)];
     }
 
     public Tile DropItem(int x, int y, ItemObject itemObject)

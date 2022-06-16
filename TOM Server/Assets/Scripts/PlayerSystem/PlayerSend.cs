@@ -8,47 +8,24 @@ public static class PlayerSend
 
     public static void SendBasicRelevantInformation(Player player, ushort clientId)
     {
-        Chunk chunk = player.currentChunk;
-
-        for (int x = -1; x <= 1; x++)
+        foreach (Chunk chunk in player.chunksInRange)
         {
-            for (int y = -1; y <= 1; y++)
+            MapSend.SendChunkMessage(clientId, chunk);
+            foreach (Player playerInChunk in chunk.players)
             {
-                int chunkX = chunk.x + x;
-                int chunkY = chunk.y + y;
-                if (chunkX > -1 && chunkX <= MapManager.Singleton.mapWidth/10 && chunkY > -1 && chunkY <= MapManager.Singleton.mapWidth/10)
-                {
-                    Chunk iterableChunk = MapManager.Singleton.map.chunks[chunkX, chunkY];
-                    MapSend.SendChunkMessage(clientId, iterableChunk);
-                    foreach (Player playerInChunk in iterableChunk.players)
-                    {
-                        if(playerInChunk != player)
-                            SendSpawnPlayerMessage(playerInChunk, clientId);
-                    }
-                }
+                if (playerInChunk != player)
+                    SendSpawnPlayerMessage(playerInChunk, clientId);
             }
         }
     }
 
     public static void SendRelevantPlayerPosition(Player player, ushort clientId)
     {
-        Chunk chunk = player.currentChunk;
 
-        for (int x = -1; x <= 1; x++)
+        foreach (Chunk chunk in player.chunksInRange)
         {
-            for (int y = -1; y <= 1; y++)
-            {
-                int chunkX = chunk.x + x;
-                int chunkY = chunk.y + y;
-                if (chunkX > -1 && chunkX <= MapManager.Singleton.mapWidth / 10 && chunkY > -1 && chunkY <= MapManager.Singleton.mapWidth / 10)
-                {
-                    Chunk iterableChunk = MapManager.Singleton.map.chunks[chunkX, chunkY];
-                    foreach (Player playerInChunk in iterableChunk.players)
-                    {
-                        SendPlayerPosition(playerInChunk, clientId);
-                    }
-                }
-            }
+            foreach (Player playerInChunk in chunk.players)
+                SendPlayerPosition(playerInChunk, clientId);
         }
     }
 

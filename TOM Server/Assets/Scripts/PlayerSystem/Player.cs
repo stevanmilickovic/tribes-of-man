@@ -24,17 +24,31 @@ public class Player : MonoBehaviour
     public Equipment tools;
     public EquipmentType equipmentType;
     public Chunk currentChunk;
+    public List<Chunk> chunksInRange;
 
     private void Update()
     {
         UpdateChunk();
     }
 
-    public Player(int _id, ushort _currectClientId, string _playerName)
+    public Player(int _id, ushort _currectClientId, string _playerName, GameObject playerObject)
     {
         id = _id;
         currentClientId = _currectClientId;
         playerName = _playerName;
+        health = 100;
+        pivot = playerObject.transform.GetChild(1).gameObject;
+        hit = pivot.transform.GetChild(0).GetComponent<Hit>();
+        inventory = new Inventory(id, 9);
+        clothes = new Equipment(id, 3, new[] { Item.Type.Armor, Item.Type.Clothing });
+        tools = new Equipment(id, 2, new[] { Item.Type.Weapon, Item.Type.Tool, Item.Type.Shield });
+        chunksInRange = new List<Chunk>();
+        currentChunk = MapUtil.GetChunk(playerObject.transform.position);
+
+        inventory.Test();
+        tools.Test();
+        CheckEquipment();
+        UpdateChunk();
     }
 
     public void Attack(Vector2 direction)
@@ -64,18 +78,42 @@ public class Player : MonoBehaviour
     {
         if (currentChunk != MapUtil.GetChunk(transform.position))
         {
+
             if (currentChunk != null)
             {
                 currentChunk.RemovePlayer(this);
-                Debug.Log(currentChunk.HasPlayer(this));
             }
-
+            foreach (Chunk chunk in chunksInRange)
+            {
+                chunk.playersInRange.Remove(this);
+            }
+            chunksInRange = new List<Chunk>();
 
             currentChunk = MapUtil.GetChunk(transform.position);
             currentChunk.AddPlayer(this);
+            UpdateChunksInRange();
 
             PlayerSend.SendBasicRelevantInformation(this, currentClientId);
         }
         PlayerSend.SendRelevantPlayerPosition(this, currentClientId);
+    }
+
+    private void UpdateChunksInRange()
+    {
+        int currentX = (int)(transform.position.x / 10);
+        int currectY = (int)(transform.position.y / 10);
+
+        for (int x = -1; x <= 1; x++)
+        {
+            for (int y = -1; y <= 1; y++)
+            {
+                Chunk chunk = MapUtil.GetChunk(currentX + x, currectY + y);
+                if (chunk != null)
+                {
+                    chunk.playersInRange.Add(this);
+                    chunksInRange.Add(chunk);
+                }
+            }
+        }
     }
 }

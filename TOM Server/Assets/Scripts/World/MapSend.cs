@@ -43,7 +43,11 @@ public static class MapSend
     {
         Message message = Message.Create(MessageSendMode.reliable, ServerToClientId.tile);
         MessageExtentions.Add(message, tile);
-        NetworkManager.Singleton.Server.SendToAll(message);
+
+        foreach (Player player in tile.chunk.playersInRange)
+        {
+            NetworkManager.Singleton.Server.Send(message, player.currentClientId);
+        }
     }
 
 }

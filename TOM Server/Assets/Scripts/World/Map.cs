@@ -54,8 +54,11 @@ public class Map
 
     private void GenerateTile(int x, int y, float[,] noise)
     {
-        tiles[x, y] = new Tile(x, y, SetTerrain(noise[x, y]));
-        chunks[(int)Mathf.Floor((float)x / 10), (int)Mathf.Floor((float)y / 10)].tiles[x % 10, y % 10] = tiles[x, y];
+        Tile tile = new Tile(x, y, SetTerrain(noise[x, y]));
+        Chunk chunk = chunks[(int)Mathf.Floor((float)x / 10), (int)Mathf.Floor((float)y / 10)];
+        tiles[x, y] = tile;
+        chunk.tiles[x % 10, y % 10] = tiles[x, y];
+        tile.chunk = chunk;
     }
 
     public TerrainTypes SetTerrain(float noise)

@@ -10,6 +10,8 @@ public class Chunk
 
     public Tile[,] tiles = new Tile[50, 50];
     public Dictionary<int, Player> players;
+    public Dictionary<(int, int), GameObject> spawnedItems;
+    public Dictionary<(int, int), GameObject> spawnedStructures;
 
     public Chunk(int _x, int _y, Tile[,] _tiles)
     {
@@ -17,6 +19,8 @@ public class Chunk
         y = _y;
         tiles = _tiles;
         players = new Dictionary<int, Player>();
+        spawnedItems = new Dictionary<(int, int), GameObject>();
+        spawnedStructures = new Dictionary<(int, int), GameObject>();
     }
 
 }

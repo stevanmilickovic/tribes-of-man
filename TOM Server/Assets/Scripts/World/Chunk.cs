@@ -11,6 +11,7 @@ public class Chunk
 
     public Tile[,] tiles = new Tile[50, 50];
     public List<Player> players;
+    public List<Player> playersInRange;
 
     public Chunk(int _x, int _y, Tile[,] _tiles)
     {
@@ -18,6 +19,7 @@ public class Chunk
         y = _y;
         tiles = _tiles;
         players = new List<Player>();
+        playersInRange = new List<Player>();
     }
 
     public void AddPlayer(Player player)

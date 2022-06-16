@@ -88,6 +88,7 @@ public class PlayerManager : MonoBehaviour
         newPlayerScript.inventory = new Inventory(newPlayerScript.id, 9);
         newPlayerScript.clothes = new Equipment(newPlayerScript.id, 3, new[] { Item.Type.Armor, Item.Type.Clothing });
         newPlayerScript.tools = new Equipment(newPlayerScript.id, 2, new[] { Item.Type.Weapon, Item.Type.Tool, Item.Type.Shield });
+        newPlayerScript.chunksInRange = new List<Chunk>();
 
         newPlayerScript.inventory.Test();
         newPlayerScript.tools.Test();
