@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using Random = System.Random;
 
 public class Map
 {
@@ -9,6 +10,8 @@ public class Map
 
     public Tile[,] tiles;
     public Chunk[,] chunks;
+
+    public static Random random = new Random();
 
     public Map(int mapWidth, int mapHeight, float[,] noise)
     {
@@ -55,6 +58,7 @@ public class Map
     private void GenerateTile(int x, int y, float[,] noise)
     {
         Tile tile = new Tile(x, y, SetTerrain(noise[x, y]));
+        GenerateFlora(tile);
         Chunk chunk = chunks[(int)Mathf.Floor((float)x / 10), (int)Mathf.Floor((float)y / 10)];
         tiles[x, y] = tile;
         chunk.tiles[x % 10, y % 10] = tiles[x, y];
@@ -81,6 +85,14 @@ public class Map
         }
 
         return TerrainTypes.Water;
+    }
+
+    private void GenerateFlora(Tile tile)
+    {
+        if (random.Next(30) == 1 && tile.type == TerrainTypes.Grass)
+        {
+            tile.SpawnStructure(StructureManager.Singleton.structuresByName["Tree"]);
+        }
     }
 
 }

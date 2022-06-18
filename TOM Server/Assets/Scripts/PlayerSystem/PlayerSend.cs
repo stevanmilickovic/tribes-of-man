@@ -8,6 +8,7 @@ public static class PlayerSend
 
     public static void SendBasicRelevantInformation(Player player, ushort clientId)
     {
+
         foreach (Chunk chunk in player.chunksInRange)
         {
             MapSend.SendChunkMessage(clientId, chunk);

@@ -42,6 +42,7 @@ public class StructureObject : MonoBehaviour
                 else
                 {
                     tile.DestroyStructure();
+                    tile.itemObject = new ItemObject(structure.item, 1);
                 }
             }
         } 
@@ -51,6 +52,7 @@ public class StructureObject : MonoBehaviour
             if (collapsedHealth <= 0)
             {
                 tile.DestroyStructure();
+                tile.itemObject = new ItemObject(structure.item, 1);
             }
         }
 

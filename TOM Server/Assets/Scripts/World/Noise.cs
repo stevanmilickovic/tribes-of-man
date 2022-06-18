@@ -69,10 +69,24 @@ public static class Noise
             for (int x = 0; x < mapWidth; x++)
             {
                 noiseMap[x, y] = Mathf.InverseLerp(minNoiseHeight, maxNoiseHeight, noiseMap[x, y]);
+                noiseMap[x, y] *= CalculateDropoff(x, y, mapWidth, mapHeight);
             }
         }
 
         return noiseMap;
+    }
+
+    private static float CalculateDropoff(int x, int y, int mapWidth, int mapHeight)
+    {
+        return Mathf.Min(
+            -Mathf.Pow(CalculateDistanceFromCenter(x, mapWidth) / (float)(mapWidth / 2), 10) + 1,
+            -Mathf.Pow(CalculateDistanceFromCenter(y, mapHeight) / (float)(mapHeight / 2), 10) + 1
+            );
+    }
+
+    private static float CalculateDistanceFromCenter(int axis, int mapDimension)
+    {
+        return Mathf.Abs(mapDimension / 2 - axis);
     }
 
 }

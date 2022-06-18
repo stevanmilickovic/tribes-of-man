@@ -22,6 +22,7 @@ public class StructureManager : MonoBehaviour
     }
 
     public Dictionary<int, Structure> structures;
+    public Dictionary<string, Structure> structuresByName;
     public GameObject largeStructurePrefab;
     public GameObject mediumStructurePrafab;
     public GameObject smallStructurePrefab;
@@ -30,6 +31,7 @@ public class StructureManager : MonoBehaviour
     private void Awake()
     {
         structures = new Dictionary<int, Structure>();
+        structuresByName = new Dictionary<string, Structure>();
         spawnedStructures = new Dictionary<(int, int), GameObject>();
         Singleton = this;
     }
@@ -80,6 +82,7 @@ public class StructureManager : MonoBehaviour
     private void AddStructure(int id, Structure.Type type, Structure.SizeType sizeType, bool collapsable, string name, string itemName, int maxHealth, int maxBrokenHealth)
     {
         structures.Add(id, new Structure(type, sizeType, collapsable, id, name, ItemManager.Singleton.itemsByName[itemName], maxHealth, maxBrokenHealth));
+        structuresByName.Add(name, structures[id]);
     }
 
 }
