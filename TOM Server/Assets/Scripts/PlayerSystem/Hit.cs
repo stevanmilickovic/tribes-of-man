@@ -24,6 +24,11 @@ public class Hit : MonoBehaviour
             Player hitPlayer = collider.gameObject.GetComponent<Player>();
             hitPlayer.health -= CalculateDamage(player);
         }
+        if (collider.gameObject.tag == "Structure")
+        {
+            StructureObject hitStructure = collider.gameObject.GetComponent<StructureObject>();
+            hitStructure.TakeDamage(CalculateDamage(player));
+        }
     }
 
     private int CalculateDamage(Player player)

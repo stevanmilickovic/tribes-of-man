@@ -28,4 +28,22 @@ public class Tile
         type = _type;
     }
 
+    public void SpawnStructure(Structure structure)
+    {
+        structureObject = StructureManager.Singleton.SpawnStructure(this, structure);
+    }
+
+    public void CollapseStructure()
+    {
+
+    }
+
+    public void DestroyStructure()
+    {
+        if (structureObject == null) return;
+
+        structureObject = null;
+        StructureManager.Singleton.DestroyStructure(this);
+    }
+
 }

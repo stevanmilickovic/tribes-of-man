@@ -47,7 +47,8 @@ public class MapManager : MonoBehaviour
     public void InitializeMap()
     {
         map = new Map(mapWidth, mapHeight, Noise.GenerateNoiseMap(mapWidth, mapHeight, seed, noiseScale, octaves, persistence, lacunarity, offset));
-        map.tiles[1, 1].structureObject = new StructureObject(StructureManager.Singleton.structures[0]); //TO REMOVE LATER
+        map.tiles[1, 1].SpawnStructure(StructureManager.Singleton.structures[0]); //TO REMOVE LATER
+        map.tiles[2, 1].SpawnStructure(StructureManager.Singleton.structures[1]);
     }
 
     private void OnValidate()

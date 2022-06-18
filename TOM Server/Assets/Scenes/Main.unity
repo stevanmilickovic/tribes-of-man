@@ -195,6 +195,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 40141c6686d73774d9b103fcd5a722a5, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  largeStructurePrefab: {fileID: 6810283435343498916, guid: fa51c35b69fccb944b26783b2684e152, type: 3}
+  mediumStructurePrafab: {fileID: 1726981526883121140, guid: 9de3ea42bf6420c4c8bcb47683f89d52, type: 3}
+  smallStructurePrefab: {fileID: 1287714761521739968, guid: 0e1b928616967574ca344685914c45e4, type: 3}
 --- !u!4 &1056561110
 Transform:
   m_ObjectHideFlags: 0

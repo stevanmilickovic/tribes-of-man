@@ -31,13 +31,13 @@ public class StructureManager : MonoBehaviour
 
     public void InitializeStructures()
     {
-        AddStructure(0, Structure.Type.Natural, "Tree", "wood", 10, 0, "tree");
-        AddStructure(1, Structure.Type.Manmade, "Wood Wall", "wood", 50, 100, "wood_wall");
+        AddStructure(0, Structure.Type.Natural, Structure.SizeType.Medium, "Tree", "wood", 10, 30, "tree", "rubble");
+        AddStructure(1, Structure.Type.Manmade, Structure.SizeType.Large, "Wood Wall", "wood", 50, 100, "wood_wall", "rubble");
     }
 
-    private void AddStructure(int id, Structure.Type type, string name, string itemName, int maxHealth, int maxBrokenHealth, string spriteName)
+    private void AddStructure(int id, Structure.Type type, Structure.SizeType sizeType, string name, string itemName, int maxHealth, int maxBrokenHealth, string spriteName, string collapsedSpriteName)
     {
-        structures.Add(id, new Structure(type, id, name, ItemManager.Singleton.itemsByName[itemName], maxHealth, maxBrokenHealth, GetSprite(spriteName)));
+        structures.Add(id, new Structure(type, sizeType, id, name, ItemManager.Singleton.itemsByName[itemName], maxHealth, maxBrokenHealth, GetSprite(spriteName), GetSprite(collapsedSpriteName)));
     }
 
     public Sprite GetSprite(string name)

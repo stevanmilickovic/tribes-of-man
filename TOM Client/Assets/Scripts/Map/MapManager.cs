@@ -35,7 +35,9 @@ public class MapManager : MonoBehaviour
 
     [SerializeField] private GameObject chunkPrefab;
     [SerializeField] private GameObject itemObjectPrefab;
-    [SerializeField] private GameObject structureObjectPrefab;
+    [SerializeField] private GameObject largeStructureObjectPrefab;
+    [SerializeField] private GameObject mediumStructureObjectPrefab;
+    [SerializeField] private GameObject smallStructureObjectPrefab;
     private Dictionary<(int, int), GameObject> spawnedItems;
     private Dictionary<(int, int), GameObject> spawnedStructures; 
     public Dictionary<(int, int), Chunk> chunks;
@@ -256,6 +258,8 @@ public class MapManager : MonoBehaviour
     public void UpdateTileStructureObject(Tile tile)
     {
         tiles[(tile.x, tile.y)].structureObject = tile.structureObject;
+        chunks[(tile.x / 10, tile.y / 10)].spawnedStructures.Remove((tile.x, tile.y));
+
         if (spawnedStructures.ContainsKey((tile.x, tile.y)))
         {
             Destroy(spawnedStructures[(tile.x, tile.y)]);
@@ -269,10 +273,26 @@ public class MapManager : MonoBehaviour
 
     private GameObject SpawnStructure(int x, int y, StructureObject structureObject)
     {
-        spawnedStructures[(x, y)] = Instantiate(structureObjectPrefab);
+        spawnedStructures[(x, y)] = InstantiateStructure(structureObject.structure);
         spawnedStructures[(x, y)].transform.position = new Vector3(x + 0.5f, y + 0.5f, 0f);
-        spawnedStructures[(x, y)].GetComponentInChildren<SpriteRenderer>().sprite = structureObject.structure.sprite;
+        spawnedStructures[(x, y)].GetComponentInChildren<SpriteRenderer>().sprite = 
+            ! structureObject.destroyed 
+            ? structureObject.structure.sprite
+            : structureObject.structure.collapsedSprite;
+        if (structureObject.destroyed)
+            spawnedStructures[(x, y)].GetComponent<Collider2D>().isTrigger = true;
         return spawnedStructures[(x, y)];
+    }
+
+    private GameObject InstantiateStructure(Structure structure)
+    {
+        if (structure.sizeType == Structure.SizeType.Large)
+            return Instantiate(largeStructureObjectPrefab);
+        if (structure.sizeType == Structure.SizeType.Medium)
+            return Instantiate(mediumStructureObjectPrefab);
+        if (structure.sizeType == Structure.SizeType.Small)
+            return Instantiate(smallStructureObjectPrefab);
+        return null;
     }
 
     public Tile DropItem(int x, int y, ItemObject itemObject)

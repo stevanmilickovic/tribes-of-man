@@ -18,4 +18,11 @@ public static class MapUtil
         return MapManager.Singleton.map.chunks[x, y];
     }
 
+    public static Tile GetTile(Vector2 position)
+    {
+        int x = (int)position.x;
+        int y = (int)position.y;
+        return MapManager.Singleton.map.tiles[x, y];
+    }
+
 }

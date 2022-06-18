@@ -31,7 +31,7 @@ public class Map
             }
         }
 
-        tiles[0, 0].itemObject = new ItemObject(ItemManager.Singleton.items[0], 1);
+        tiles[0, 0].itemObject = new ItemObject(ItemManager.Singleton.items[0], 1); //TO REMOVE LATER BUT MAYBE NOT
     }
 
     private void GenerateChunk(int x, int y, int mapWidth, int mapHeight)

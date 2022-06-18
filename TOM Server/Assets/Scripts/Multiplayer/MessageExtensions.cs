@@ -88,9 +88,9 @@ public static class MessageExtentions
         }
 
         message.Add(structureObject.structure.id);
-        message.Add(structureObject.destroyed);
+        message.Add(structureObject.collapsed);
         message.Add(structureObject.health);
-        message.Add(structureObject.destroyedHealth);
+        message.Add(structureObject.collapsedHealth);
 
         return message;
     }

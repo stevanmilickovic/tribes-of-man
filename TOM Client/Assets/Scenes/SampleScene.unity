@@ -911,7 +911,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   chunkPrefab: {fileID: 3576446101769706287, guid: c9e2a63b534a42b4c9028b203a64613a, type: 3}
   itemObjectPrefab: {fileID: 8953728891861539556, guid: 3b496db0f11fd724c9aee0a0f880d43a, type: 3}
-  structureObjectPrefab: {fileID: 530005066166035468, guid: f768ffc23ea6a1f42ac9faae0d89d7a6, type: 3}
+  largeStructureObjectPrefab: {fileID: 559141217822250294, guid: c118fe42bc3767043937ad824327cc2a, type: 3}
+  mediumStructureObjectPrefab: {fileID: 7708150632635312907, guid: d83af3e9ca626ba489145178726ab45c, type: 3}
+  smallStructureObjectPrefab: {fileID: 5072701017609254776, guid: 1f05f023038f87f4f99adb6bb3f68f09, type: 3}
 --- !u!4 &1129335258
 Transform:
   m_ObjectHideFlags: 0
