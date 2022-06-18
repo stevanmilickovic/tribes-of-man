@@ -207,6 +207,16 @@ public class PlayerManager : MonoBehaviour
         }
     }
 
+    public void UpdatePlayerEquipment(int id, Equipment clothes, Equipment tools)
+    {
+        if (players.TryGetValue(id, out Player player) && id != myId)
+        {
+            player.clothes = clothes;
+            player.tools = tools;
+            player.CheckEquipment();
+        }
+    }
+
     #region Inventory
 
     public void UpdateInventory(Inventory inventory)

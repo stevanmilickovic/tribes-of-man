@@ -43,7 +43,7 @@ public class NetworkManager : MonoBehaviour
         }
     }
 
-    [SerializeField] private string ip;
+    public string ip = "127.0.0.1";
     [SerializeField] private ushort port;
     [Space(10)]
     [SerializeField] private ushort tickDivergenceTolerance = 1;

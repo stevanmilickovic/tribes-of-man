@@ -35,6 +35,7 @@ public static class InventoryManager
         inventory2.slots[InventoryUtil.GetSlotNumber(slot2)] = item1;
 
         PlayerSend.SendInventoryMessage(PlayerManager.Singleton.playersByClientId[fromClientId], fromClientId);
+        PlayerSend.SendPlayerEquipment(PlayerManager.Singleton.playersByClientId[fromClientId]);
     }
 
     public static void DropItem(ushort clientId, int slot)

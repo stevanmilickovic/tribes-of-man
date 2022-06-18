@@ -56,6 +56,9 @@ public class PlayerManager : MonoBehaviour
         PlayerSend.SendSpawnPlayerMessage(playersByName[name], clientId); // This player
         PlayerSend.SendInventoryMessage(playersByName[name], clientId);
         PlayerSend.SendBasicRelevantInformation(playersByName[name], clientId);
+
+        if (name == "admin")
+            MapSend.SendAllChunks(clientId, MapManager.Singleton.map);
     }
 
     public void PlayerLeft(ushort clientId)

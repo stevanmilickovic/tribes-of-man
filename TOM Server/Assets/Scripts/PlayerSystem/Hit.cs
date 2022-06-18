@@ -22,7 +22,7 @@ public class Hit : MonoBehaviour
         if (collider.gameObject.tag == "Player" && collider.gameObject != transform.parent.transform.parent.gameObject)
         {
             Player hitPlayer = collider.gameObject.GetComponent<Player>();
-            hitPlayer.health -= CalculateDamage(player);
+            hitPlayer.TakeDamage(CalculateDamage(player));
         }
         if (collider.gameObject.tag == "Structure")
         {

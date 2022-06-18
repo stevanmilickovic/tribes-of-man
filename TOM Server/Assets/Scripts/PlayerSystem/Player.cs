@@ -2,6 +2,7 @@ using RiptideNetworking;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using Random = System.Random;
 
 public class Player : MonoBehaviour
 {
@@ -25,6 +26,8 @@ public class Player : MonoBehaviour
     public EquipmentType equipmentType;
     public Chunk currentChunk;
     public List<Chunk> chunksInRange;
+
+    public static Random random = new Random();
 
     private void Update()
     {
@@ -115,5 +118,17 @@ public class Player : MonoBehaviour
                 }
             }
         }
+    }
+
+    public void TakeDamage(int damage)
+    {
+        health -= damage;
+        if (health <= 0)
+        {
+            inventory.DropItem((int)transform.position.x, (int)transform.position.y, random.Next(9));
+            transform.position = new Vector3(1, 1, 0);
+            health = 100;
+        }
+        PlayerSend.SendInventoryMessage(this, currentClientId);
     }
 }

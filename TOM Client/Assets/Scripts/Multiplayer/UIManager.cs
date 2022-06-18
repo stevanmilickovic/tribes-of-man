@@ -25,6 +25,7 @@ public class UIManager : MonoBehaviour
 
     [Header("Connect")]
     [SerializeField] private GameObject connectUI;
+    [SerializeField] private InputField addressField;
     [SerializeField] private InputField usernameField;
 
     private void Awake()
@@ -35,7 +36,9 @@ public class UIManager : MonoBehaviour
     public void ConnectClicked()
     {
         usernameField.interactable = false;
+        addressField.interactable = false;
         connectUI.SetActive(false);
+        NetworkManager.Singleton.ip = addressField.text != "" ? addressField.text : "127.0.0.1";
 
         NetworkManager.Singleton.Connect();
     }
@@ -43,6 +46,7 @@ public class UIManager : MonoBehaviour
     public void BackToMain()
     {
         usernameField.interactable = true;
+        addressField.interactable = true;
         connectUI.SetActive(true);
     }
 

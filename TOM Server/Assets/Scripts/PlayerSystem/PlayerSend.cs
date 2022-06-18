@@ -22,11 +22,9 @@ public static class PlayerSend
 
     public static void SendRelevantPlayerPosition(Player player, ushort clientId)
     {
-
-        foreach (Chunk chunk in player.chunksInRange)
+        foreach (Player playerInSight in player.currentChunk.playersInRange)
         {
-            foreach (Player playerInChunk in chunk.players)
-                SendPlayerPosition(playerInChunk, clientId);
+            SendPlayerPosition(playerInSight, clientId);
         }
     }
 
@@ -88,5 +86,18 @@ public static class PlayerSend
         message.AddVector2(new Vector2(player.gameObject.transform.position.x, player.gameObject.transform.position.y));
         message.AddInt(player.health);
         NetworkManager.Singleton.Server.Send(message, clientId);
+    }
+
+    public static void SendPlayerEquipment(Player player)
+    {
+        Message message = Message.Create(MessageSendMode.reliable, ServerToClientId.playerEquipment);
+        message.AddInt(player.id);
+        MessageExtentions.AddEquipment(message, player.clothes);
+        MessageExtentions.AddEquipment(message, player.tools);
+
+        foreach (Player playerInSight in player.currentChunk.playersInRange)
+        {
+            NetworkManager.Singleton.Server.Send(message, playerInSight.currentClientId);
+        }
     }
 }

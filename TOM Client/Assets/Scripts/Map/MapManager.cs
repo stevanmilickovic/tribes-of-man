@@ -236,6 +236,7 @@ public class MapManager : MonoBehaviour
     public void UpdateTileItemObject(Tile tile)
     {
         tiles[(tile.x, tile.y)].itemObject = tile.itemObject;
+        chunks[(tile.x / 10, tile.y / 10)].spawnedItems.Remove((tile.x, tile.y));
         if (spawnedItems.ContainsKey((tile.x, tile.y)))
         {
             Destroy(spawnedItems[(tile.x, tile.y)]);
