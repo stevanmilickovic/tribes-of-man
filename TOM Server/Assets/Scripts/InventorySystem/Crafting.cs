@@ -2,40 +2,17 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class Crafting : MonoBehaviour
+public static class Crafting
 {
-    private static Crafting singleton;
+    public static Dictionary<(Item, Item), (Item, int)> recipes = new Dictionary<(Item, Item), (Item, int)>();
 
-    public static Crafting Singleton
-    {
-        get => singleton;
-        private set
-        {
-            if (singleton == null)
-                singleton = value;
-            else if (singleton != value)
-            {
-                Debug.Log($"{nameof(Crafting)} instance already exists, destroying duplicate!");
-                Destroy(value);
-            }
-        }
-    }
-
-    public Dictionary<(Item, Item), (Item, int)> recipes;
-
-    private void Awake()
-    {
-        recipes = new Dictionary<(Item, Item), (Item, int)>();
-        Singleton = this;
-    }
-
-    public void InitializeRecipes()
+    public static void InitializeRecipes()
     {
         AddRecipe("stick", "stick", "wood", 1);
         AddRecipe("wood", "wood", "stick", 1);
     }
 
-    private void AddRecipe(string item1name, string item2name, string resultItem, int resultAmount)
+    private static void AddRecipe(string item1name, string item2name, string resultItem, int resultAmount)
     {
         Item item1 = ItemManager.Singleton.itemsByName[item1name];
         Item item2 = ItemManager.Singleton.itemsByName[item2name];
@@ -43,7 +20,7 @@ public class Crafting : MonoBehaviour
         recipes.Add((item1, item2), (result, resultAmount));
     }
 
-    public void Craft(ushort clientId, int slot, int tileX, int tileY)
+    public static void Craft(ushort clientId, int slot, int tileX, int tileY)
     {
         Player player = PlayerManager.Singleton.playersByClientId[clientId];
         ItemObject item = InventoryUtil.GetItemObjectFromPlayer(player, slot);
@@ -52,19 +29,27 @@ public class Crafting : MonoBehaviour
 
         if (tile.itemObject != null && item != null && GetRecipe(item, tile.itemObject) != null)
         {
-            ItemObject craftedObject = GetRecipe(item, tile.itemObject);
-            if (tile.itemObject.amount == 1)
+            if (IsFrameRecipe(tile.itemObject, item))
             {
-                tile.itemObject = craftedObject;
-                InventoryUtil.GetPlayerInventoryBySlot(player, slot).ReduceSlotAmount(InventoryUtil.GetRelativeSlotNumber(slot));
+                tile.itemObject = null;
+                tile.SpawnStructure(StructureManager.Singleton.structuresByName["Frame"]);
             }
             else
             {
-                droppedTile = MapManager.Singleton.DropItem(tileX, tileY, craftedObject);
-                if(droppedTile != null)
+                ItemObject craftedObject = GetRecipe(item, tile.itemObject);
+                if (tile.itemObject.amount == 1)
                 {
-                    tile.itemObject.amount -= 1;
+                    tile.itemObject = craftedObject;
                     InventoryUtil.GetPlayerInventoryBySlot(player, slot).ReduceSlotAmount(InventoryUtil.GetRelativeSlotNumber(slot));
+                }
+                else
+                {
+                    droppedTile = MapManager.Singleton.DropItem(tileX, tileY, craftedObject);
+                    if (droppedTile != null)
+                    {
+                        tile.itemObject.amount -= 1;
+                        InventoryUtil.GetPlayerInventoryBySlot(player, slot).ReduceSlotAmount(InventoryUtil.GetRelativeSlotNumber(slot));
+                    }
                 }
             }
         }
@@ -75,7 +60,7 @@ public class Crafting : MonoBehaviour
         PlayerSend.SendInventoryMessage(player, clientId);
     }
 
-    private ItemObject GetRecipe(ItemObject item1, ItemObject item2)
+    private static ItemObject GetRecipe(ItemObject item1, ItemObject item2)
     {
         if (RecipeExists(item1, item2))
         {
@@ -90,12 +75,19 @@ public class Crafting : MonoBehaviour
         return null;
     }
 
-    private bool RecipeExists(ItemObject item1, ItemObject item2)
+    private static bool RecipeExists(ItemObject item1, ItemObject item2)
     {
         if (recipes.ContainsKey((item1.item, item2.item)))
         {
             return true;
         }
+        return false;
+    }
+
+    private static bool IsFrameRecipe(ItemObject item1, ItemObject item2)
+    {
+        if (item1.item == ItemManager.Singleton.itemsByName["stick"] && item2.item == ItemManager.Singleton.itemsByName["stick"])
+            return true;
         return false;
     }
 }

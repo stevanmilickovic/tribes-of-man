@@ -112,6 +112,10 @@ public class DisplayInventory : MonoBehaviour
         {
             AttemptCraftItems(mouseItem.slot, tile);
         }
+        else if (tile != null && tile.structureObject != null)
+        {
+            AttemptBuildItems(mouseItem.slot, tile);
+        }
         else
         {
             TemporarilyDropItem(mouseItem.slot);
@@ -163,6 +167,17 @@ public class DisplayInventory : MonoBehaviour
     {
         int i = GetIndex(slot);
         Crafting.Singleton.Craft(GetInventory(i), GetSlotNumber(i), tile.x, tile.y);
+    }
+
+    public void AttemptBuildItems(GameObject slot, Tile tile)
+    {
+        int i = GetIndex(slot);
+        bool buildingSuccessful = Building.Build(GetItem(slot), tile);
+        if (buildingSuccessful)
+        {
+            GetInventory(i).ReduceSlotAmount(GetSlotNumber(i));
+            PlayerManager.Singleton.Build(i, tile.x, tile.y);
+        }
     }
 
     public void CreateDisplay()

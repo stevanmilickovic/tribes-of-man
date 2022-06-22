@@ -22,10 +22,12 @@ public class StructureManager : MonoBehaviour
     }
 
     public Dictionary<int, Structure> structures;
+    public Dictionary<string, Structure> structuresByName;
 
     private void Awake()
     {
         structures = new Dictionary<int, Structure>();
+        structuresByName = new Dictionary<string, Structure>();
         Singleton = this;
     }
 
@@ -33,11 +35,13 @@ public class StructureManager : MonoBehaviour
     {
         AddStructure(0, Structure.Type.Natural, Structure.SizeType.Medium, "Tree", "wood", 10, 30, "tree", "rubble");
         AddStructure(1, Structure.Type.Manmade, Structure.SizeType.Large, "Wood Wall", "wood", 50, 100, "wood_wall", "rubble");
+        AddStructure(2, Structure.Type.Manmade, Structure.SizeType.Large, "Frame", "stick", 1, 1, "frame", "rubble");
     }
 
     private void AddStructure(int id, Structure.Type type, Structure.SizeType sizeType, string name, string itemName, int maxHealth, int maxBrokenHealth, string spriteName, string collapsedSpriteName)
     {
         structures.Add(id, new Structure(type, sizeType, id, name, ItemManager.Singleton.itemsByName[itemName], maxHealth, maxBrokenHealth, GetSprite(spriteName), GetSprite(collapsedSpriteName)));
+        structuresByName.Add(name, structures[id]);
     }
 
     public Sprite GetSprite(string name)

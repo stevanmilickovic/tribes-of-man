@@ -25,4 +25,9 @@ public static class MapUtil
         return MapManager.Singleton.map.tiles[x, y];
     }
 
+    public static Tile GetTile(int x, int y)
+    {
+        return MapManager.Singleton.map.tiles[x, y];
+    }
+
 }

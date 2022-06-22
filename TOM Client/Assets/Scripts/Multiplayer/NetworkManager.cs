@@ -11,7 +11,8 @@ public enum ClientToServerId : ushort
     craft,
     swap,
     drop,
-    attack
+    attack,
+    build
 }
 public enum ServerToClientId : ushort
 {

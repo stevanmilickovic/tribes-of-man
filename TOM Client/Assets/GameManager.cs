@@ -9,5 +9,6 @@ public class GameManager : MonoBehaviour
         ItemManager.Singleton.InitializeItems();
         Crafting.Singleton.InitializeRecipes();
         StructureManager.Singleton.InitializeStructures();
+        Building.InitializeRecipes();
     }
 }

@@ -49,20 +49,31 @@ public class Crafting : MonoBehaviour
 
         if (tile.itemObject != null && item != null && GetRecipe(item, tile.itemObject) != null)
         {
-            ItemObject craftedItem = GetRecipe(item, tile.itemObject);
-            if(tile.itemObject.amount == 1)
+
+            if (item.item == ItemManager.Singleton.itemsByName["stick"] && tile.itemObject.item == ItemManager.Singleton.itemsByName["stick"])
             {
-                tile.itemObject = craftedItem;
+                tile.itemObject = null;
                 inventory.ReduceSlotAmount(slot);
+                tile.structureObject = new StructureObject(StructureManager.Singleton.structuresByName["Frame"]);
+                MapManager.Singleton.UpdateTile(tile);
             }
             else
             {
-                Tile droppedTile = MapManager.Singleton.DropItem(tileX, tileY, craftedItem);
-                if(droppedTile != null)
+                ItemObject craftedItem = GetRecipe(item, tile.itemObject);
+                if (tile.itemObject.amount == 1)
                 {
-                    tile.itemObject.amount -= 1;
+                    tile.itemObject = craftedItem;
                     inventory.ReduceSlotAmount(slot);
-                    MapManager.Singleton.UpdateTile(droppedTile);
+                }
+                else
+                {
+                    Tile droppedTile = MapManager.Singleton.DropItem(tileX, tileY, craftedItem);
+                    if (droppedTile != null)
+                    {
+                        tile.itemObject.amount -= 1;
+                        inventory.ReduceSlotAmount(slot);
+                        MapManager.Singleton.UpdateTile(droppedTile);
+                    }
                 }
             }
             MapManager.Singleton.UpdateTile(tile);

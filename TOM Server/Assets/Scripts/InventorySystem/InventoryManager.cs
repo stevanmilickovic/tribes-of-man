@@ -76,7 +76,16 @@ public static class InventoryManager
 
     public static void CraftItems(ushort clientId, int slot, int tileX, int tileY)
     {
-        Crafting.Singleton.Craft(clientId, slot, tileX, tileY);
+        Crafting.Craft(clientId, slot, tileX, tileY);
+    }
+
+    public static void BuildStructure(ushort clientId, int slot, int tileX, int tileY)
+    {
+        Inventory inventory = PlayerManager.Singleton.playersByClientId[clientId].inventory;
+        bool buildSuccessful = Building.Build(PlayerManager.Singleton.playersByClientId[clientId].inventory.slots[slot], MapUtil.GetTile(tileX, tileY));
+        if (buildSuccessful)
+            inventory.ReduceSlotAmount(slot);
+        PlayerSend.SendInventoryMessage(PlayerManager.Singleton.playersByClientId[clientId], clientId);
     }
 
 }

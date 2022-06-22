@@ -38,4 +38,13 @@ public static class InventoryHandle
         InventoryManager.CraftItems(fromClientId, slot, tileX, tileY);
     }
 
+    [MessageHandler((ushort)ClientToServerId.build)]
+    public static void PlayerBuild(ushort fromClientId, Message message)
+    {
+        int slot = message.GetInt();
+        int tileX = message.GetInt();
+        int tileY = message.GetInt();
+        InventoryManager.BuildStructure(fromClientId, slot, tileX, tileY);
+    }
+
 }
