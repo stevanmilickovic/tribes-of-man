@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using TMPro;
 
 struct Key
 {
@@ -253,6 +254,7 @@ public class MapManager : MonoBehaviour
         spawnedItems[(x, y)] = Instantiate(itemObjectPrefab);
         spawnedItems[(x, y)].transform.position = new Vector3(x + 0.5f, y + 0.5f, 0f);
         spawnedItems[(x, y)].GetComponentInChildren<SpriteRenderer>().sprite = itemObject.item.sprite;
+        spawnedItems[(x, y)].transform.GetChild(1).gameObject.GetComponent<TextMeshPro>().text = itemObject.amount == 1 ? "" : itemObject.amount.ToString();
         return spawnedItems[(x, y)];
     }
 

@@ -491,6 +491,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 17d1fe5c1a3072446bb79cd34f07304d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  mouseObjectPrefab: {fileID: 8740205592236070972, guid: 8db336aded03b2543a87b827e7979d4d, type: 3}
   slot: {fileID: 8596160781848167052, guid: 093b5bfcd6757914eb82d2f50313d8e0, type: 3}
   numberOfAwaitedResponses: 0
   X_START: -100

@@ -9,7 +9,7 @@ public enum ClientToServerId : ushort
     input,
     pickup,
     craft,
-    swap,
+    moveItems,
     drop,
     attack,
     build

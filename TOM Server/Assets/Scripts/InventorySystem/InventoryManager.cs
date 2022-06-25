@@ -17,8 +17,15 @@ public static class InventoryManager
         MapSend.SendTileMessage(tile);
     }
 
-    public static void SwapItems(ushort fromClientId, int slot1, int slot2)
+    public static void MoveItems(ushort fromClientId, int slot1, int amount, int slot2)
     {
+        if (slot1 == slot2)
+        {
+            PlayerSend.SendInventoryMessage(PlayerManager.Singleton.playersByClientId[fromClientId], fromClientId);
+            PlayerSend.SendPlayerEquipment(PlayerManager.Singleton.playersByClientId[fromClientId]);
+            return;
+        }
+
         Inventory inventory1 = InventoryUtil.GetInventory(slot1, fromClientId);
         Inventory inventory2 = InventoryUtil.GetInventory(slot2, fromClientId);
 
@@ -31,8 +38,45 @@ public static class InventoryManager
             return;
         }
 
-        inventory1.slots[InventoryUtil.GetSlotNumber(slot1)] = item2;
-        inventory2.slots[InventoryUtil.GetSlotNumber(slot2)] = item1;
+        if (amount == 0)
+        {
+            if (item1 != null && item2 != null && item1.item == item2.item && item1.item.stackable)
+            {
+                item2.amount += item1.amount;
+                inventory1.slots[InventoryUtil.GetSlotNumber(slot1)] = null;
+            }
+            else
+            {
+                inventory1.slots[InventoryUtil.GetSlotNumber(slot1)] = item2;
+                inventory2.slots[InventoryUtil.GetSlotNumber(slot2)] = item1;
+            }
+        }
+        else if (amount == 1)
+        {
+            if (item2 == null)
+            {
+                inventory1.ReduceSlotAmount(InventoryUtil.GetSlotNumber(slot1));
+                inventory2.slots[InventoryUtil.GetSlotNumber(slot2)] = new ItemObject(item1.item, 1);
+            }
+            else if (item2.item == item1.item && item2.item.stackable)
+            {
+                inventory1.ReduceSlotAmount(InventoryUtil.GetSlotNumber(slot1));
+                item2.amount += 1;
+            }
+        }
+        else if (amount == (int)Mathf.Floor(item1.amount / 2))
+        {
+            if (item2 == null)
+            {
+                inventory2.slots[InventoryUtil.GetSlotNumber(slot2)] = new ItemObject(item1.item, (int)Mathf.Floor(item1.amount / 2));
+                inventory1.ReduceSlotAmountByNumber(InventoryUtil.GetSlotNumber(slot1), (int)Mathf.Floor(item1.amount / 2));
+            }
+            else if (item2.item == item1.item && item2.item.stackable)
+            {
+                item2.amount += (int)Mathf.Floor(item1.amount / 2);
+                inventory1.ReduceSlotAmountByNumber(InventoryUtil.GetSlotNumber(slot1), (int)Mathf.Floor(item1.amount / 2));
+            }
+        }
 
         PlayerSend.SendInventoryMessage(PlayerManager.Singleton.playersByClientId[fromClientId], fromClientId);
         PlayerSend.SendPlayerEquipment(PlayerManager.Singleton.playersByClientId[fromClientId]);

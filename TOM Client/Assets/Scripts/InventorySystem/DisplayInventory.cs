@@ -33,9 +33,14 @@ public class DisplayInventory : MonoBehaviour
     private Inventory inventory;
     private Equipment clothes;
     private Equipment tools;
+    public GameObject mouseObjectPrefab;
     public GameObject slot;
     private GameObject[] slots = new GameObject[14];
     public int numberOfAwaitedResponses = 0;
+
+    private bool leftClick = false;
+    private bool rightClick = false;
+    private bool middleClick = false;
 
     public int X_START;
     public int Y_START;
@@ -86,16 +91,27 @@ public class DisplayInventory : MonoBehaviour
     }
     public void OnDragStart(GameObject obj)
     {
-        var mouseObject = new GameObject();
-        var rt = mouseObject.AddComponent<RectTransform>();
-        rt.sizeDelta = new Vector2(50, 50);
+        leftClick = rightClick = middleClick = false;
+        GameObject mouseObject = Instantiate(mouseObjectPrefab);
         mouseObject.transform.SetParent(transform.parent);
         ItemObject itemObject = GetItem(obj);
         if (itemObject != null)
         {
-            var img = mouseObject.AddComponent<Image>();
-            img.sprite = itemObject.item.sprite;
-            img.raycastTarget = false;
+            if (Input.GetKey(KeyCode.Mouse0))
+            {
+                StartSwappingItems(obj, mouseObject, itemObject);
+                leftClick = true;
+            }
+            else if (Input.GetKey(KeyCode.Mouse1))
+            {
+                StartMovingOneAmountOfItem(obj, mouseObject, itemObject);
+                rightClick = true;
+            }
+            else if (Input.GetKey(KeyCode.Mouse2))
+            {
+                StartMovingHalfTheAmountOfItems(obj, mouseObject, itemObject);
+                middleClick = true;
+            }
         }
         mouseItem.obj = mouseObject;
         mouseItem.slot = obj;
@@ -106,7 +122,7 @@ public class DisplayInventory : MonoBehaviour
 
         if (mouseItem.hoverSlot)
         {
-            TemporarilySwapSlots(mouseItem.slot, mouseItem.hoverSlot);
+            TemporarilyMoveItems(mouseItem.slot, mouseItem.hoverSlot);
         }
         else if (tile != null && tile.itemObject != null)
         {
@@ -132,10 +148,53 @@ public class DisplayInventory : MonoBehaviour
         }
     }
 
-    public void TemporarilySwapSlots(GameObject slot1, GameObject slot2)
+    private void StartSwappingItems(GameObject obj, GameObject mouseObject, ItemObject itemObject)
     {
+        UpdateSlotDisplay(obj, null); //Makes slot empty
+        SetMouseObjectBasics(mouseObject, itemObject);
+        mouseObject.transform.GetChild(0).gameObject.GetComponent<TextMeshProUGUI>().text = itemObject.amount == 1 ? "" : itemObject.amount.ToString();
+    }
+
+    private void StartMovingOneAmountOfItem(GameObject obj, GameObject mouseObject, ItemObject itemObject)
+    {
+        if (itemObject.amount == 1)
+        {
+            StartSwappingItems(obj, mouseObject, itemObject);
+            return;
+        }
+        UpdateSlotDisplay(obj, new ItemObject(itemObject.item, (int)Mathf.Ceil(itemObject.amount - 1)));
+        SetMouseObjectBasics(mouseObject, itemObject);
+    }
+
+    private void StartMovingHalfTheAmountOfItems(GameObject obj, GameObject mouseObject, ItemObject itemObject)
+    {
+        if (itemObject.amount == 1)
+        {
+            StartSwappingItems(obj, mouseObject, itemObject);
+            return;
+        }
+        UpdateSlotDisplay(obj, new ItemObject(itemObject.item, (int)Mathf.Ceil((float)itemObject.amount / 2)));
+        SetMouseObjectBasics(mouseObject, itemObject);
+        mouseObject.transform.GetChild(0).gameObject.GetComponent<TextMeshProUGUI>().text = Mathf.Floor(itemObject.amount / 2) <= 1 ? "" : Mathf.Floor(itemObject.amount/2).ToString();
+    }
+
+    private void SetMouseObjectBasics(GameObject mouseObject, ItemObject itemObject)
+    {
+        var img = mouseObject.GetComponent<Image>();
+        img.color = new Color(255, 255, 255, 255);
+        img.sprite = itemObject.item.sprite;
+        img.raycastTarget = false;
+        var text = mouseObject.transform.GetChild(0).gameObject.GetComponent<TextMeshProUGUI>();
+        text.raycastTarget = false;
+    }
+
+    public void TemporarilyMoveItems(GameObject slot1, GameObject slot2)
+    {
+
         ItemObject item1 = GetItem(slot1);
         ItemObject item2 = GetItem(slot2);
+
+        int amount = 0;
 
         int i1 = GetIndex(slot1);
         int i2 = GetIndex(slot2);
@@ -144,15 +203,59 @@ public class DisplayInventory : MonoBehaviour
         Inventory inventory2 = GetInventory(i2);
 
         if (!inventory1.CanAddItem(item2) || !inventory2.CanAddItem(item1))
+        {
+            UpdateInventory();
             return;
+        }
 
-        inventory1.slots[GetSlotNumber(i1)] = item2;
-        inventory2.slots[GetSlotNumber(i2)] = item1;
+        if (leftClick)
+        {
+            if (item1 != null && item2 != null && item1.item == item2.item && item2.item.stackable)
+            {
+                item2.amount += item1.amount;
+                inventory1.slots[GetSlotNumber(i1)] = null;
+            }
+            else
+            {
+                inventory1.slots[GetSlotNumber(i1)] = item2;
+                inventory2.slots[GetSlotNumber(i2)] = item1;
+            }
+        }
+        else if (rightClick)
+        {
+            if (item2 == null)
+            {
+                inventory1.ReduceSlotAmount(GetSlotNumber(i1));
+                inventory2.slots[GetSlotNumber(i2)] = new ItemObject(item1.item, 1);
+                amount = 1;
+            }
+            else if (item2.item == item1.item && item2.item.stackable)
+            {
+                inventory1.ReduceSlotAmount(GetSlotNumber(i1));
+                item2.amount += 1;
+                amount = 1;
+            }
+        }
+        else if (middleClick)
+        {
+            if (item2 == null)
+            {
+                inventory2.slots[GetSlotNumber(i2)] = new ItemObject(item1.item, (int)Mathf.Floor(item1.amount / 2));
+                amount = (int)Mathf.Floor(item1.amount / 2);
+                inventory1.ReduceSlotAmountByNumber(GetSlotNumber(i1), (int)Mathf.Floor(item1.amount / 2));
+            }
+            else if (item2.item == item1.item && item2.item.stackable)
+            {
+                item2.amount += (int)Mathf.Floor(item1.amount / 2);
+                amount = (int)Mathf.Floor(item1.amount / 2);
+                inventory1.ReduceSlotAmountByNumber(GetSlotNumber(i1), (int)Mathf.Floor(item1.amount / 2));
+            }
+        }
 
         UpdateSlotDisplay(slot1, item2);
         UpdateSlotDisplay(slot2, item1);
 
-        PlayerManager.Singleton.SwapItems(GetIndex(mouseItem.slot), GetIndex(mouseItem.hoverSlot));
+        PlayerManager.Singleton.MoveItems(GetIndex(mouseItem.slot), amount, GetIndex(mouseItem.hoverSlot));
     }
 
     public void TemporarilyDropItem(GameObject slot)
@@ -296,7 +399,7 @@ public class DisplayInventory : MonoBehaviour
         if (item != null)
         {
             slot.GetComponent<Image>().color = Color.white;
-            slot.GetComponentInChildren<TextMeshProUGUI>().text = (item.amount == 1) ? string.Empty : item.amount.ToString();
+            slot.GetComponentInChildren<TextMeshProUGUI>().text = (item.amount <= 1) ? "" : item.amount.ToString();
             slot.GetComponent<Image>().sprite = item.item.sprite;
         }
         else

@@ -247,10 +247,11 @@ public class PlayerManager : MonoBehaviour
         awaitedInventoryUpdates++;
     }
 
-    public void SwapItems(int slot1, int slot2)
+    public void MoveItems(int slot1, int amount, int slot2)
     {
-        Message message = Message.Create(MessageSendMode.reliable, ClientToServerId.swap);
+        Message message = Message.Create(MessageSendMode.reliable, ClientToServerId.moveItems);
         message.Add(slot1);
+        message.Add(amount);
         message.Add(slot2);
         NetworkManager.Singleton.Client.Send(message);
         awaitedInventoryUpdates++;

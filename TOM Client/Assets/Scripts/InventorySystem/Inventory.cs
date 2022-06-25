@@ -80,4 +80,15 @@ public class Inventory
             slots[slot] = null;
         }
     }
+
+    public void ReduceSlotAmountByNumber(int slot, int amount)
+    {
+        ItemObject itemObject = slots[slot];
+        itemObject.amount -= amount;
+
+        if (itemObject.amount <= 0)
+        {
+            slots[slot] = null;
+        }
+    }
 }

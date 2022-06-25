@@ -14,12 +14,13 @@ public static class InventoryHandle
         InventoryManager.HandlePickupRequest(fromClientId, x, y);
     }
 
-    [MessageHandler((ushort)ClientToServerId.swap)]
+    [MessageHandler((ushort)ClientToServerId.moveItems)]
     public static void PlayerItemSwap(ushort fromClientId, Message message)
     {
         int slot1 = message.GetInt();
+        int amount = message.GetInt();
         int slot2 = message.GetInt();
-        InventoryManager.SwapItems(fromClientId, slot1, slot2);
+        InventoryManager.MoveItems(fromClientId, slot1, amount, slot2);
     }
 
     [MessageHandler((ushort)ClientToServerId.drop)]
