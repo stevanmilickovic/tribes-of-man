@@ -78,6 +78,8 @@ public class StructureManager : MonoBehaviour
         AddStructure(0, Structure.Type.Natural, Structure.SizeType.Medium, false, "Tree", "wood", 10, 30);
         AddStructure(1, Structure.Type.Manmade, Structure.SizeType.Large, true, "Wood Wall", "wood", 50, 100);
         AddStructure(2, Structure.Type.Manmade, Structure.SizeType.Large, false, "Frame", "stick", 1, 1);
+        AddStructure(3, Structure.Type.Natural, Structure.SizeType.Small, false, "Bush", "stick", 5, 0);
+        AddStructure(4, Structure.Type.Natural, Structure.SizeType.Small, false, "Berries", "stick", 5, 0);
     }
 
     private void AddStructure(int id, Structure.Type type, Structure.SizeType sizeType, bool collapsable, string name, string itemName, int maxHealth, int maxBrokenHealth)

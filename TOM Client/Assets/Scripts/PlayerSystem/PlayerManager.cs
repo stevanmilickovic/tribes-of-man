@@ -4,6 +4,7 @@ using UnityEngine;
 using RiptideNetworking;
 using System;
 using TMPro;
+using UnityEngine.EventSystems;
 
 public class PlayerManager : MonoBehaviour
 {
@@ -51,9 +52,9 @@ public class PlayerManager : MonoBehaviour
     private void HandleInputs()
     {
         GetInputs();
-        if (Input.GetKeyDown(KeyCode.Mouse1))
+        if (Input.GetKeyDown(KeyCode.Mouse1) && !EventSystem.current.IsPointerOverGameObject())
             Pickup();
-        if (Input.GetKeyDown(KeyCode.Mouse0))
+        if (Input.GetKeyDown(KeyCode.Mouse0) && !EventSystem.current.IsPointerOverGameObject())
             Attact();
     }
 
