@@ -30,4 +30,11 @@ public static class MapUtil
         return MapManager.Singleton.map.tiles[x, y];
     }
 
+    public static bool IsWithinRange(int x, int y, Vector2 position)
+    {
+        if (Mathf.Abs(x - (int)position.x) > 1 || Mathf.Abs(y - (int)position.y) > 1)
+            return false;
+        return true;
+    }
+
 }

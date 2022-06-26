@@ -54,7 +54,7 @@ public class PlayerManager : MonoBehaviour
 
         PlayerSend.SendYourIdMessage(playersByName[name], clientId);
         PlayerSend.SendSpawnPlayerMessage(playersByName[name], clientId); // This player
-        PlayerSend.SendInventoryMessage(playersByName[name], clientId);
+        PlayerSend.SendInventoryMessage(playersByName[name], clientId, 1);
         PlayerSend.SendBasicRelevantInformation(playersByName[name], clientId);
 
         if (name == "admin")

@@ -72,11 +72,11 @@ public class MapManager : MonoBehaviour
         }
     }
 
-    public Tile DropItem(int x, int y, ItemObject itemObject)
+    public Tile DropItem(int x, int y, ItemObject itemObject, int amount)
     {
         Tile tile = map.tiles[x, y];
 
-        if(TryToTakeItem(tile, itemObject))
+        if(TryToTakeItem(tile, itemObject, amount))
         {
             return tile;
         }
@@ -87,7 +87,7 @@ public class MapManager : MonoBehaviour
             {
                 if (_x >= 0 && _y >= 0 && _x < map.tiles.GetLength(0) && _y < map.tiles.GetLength(1))
                 {
-                    if (TryToTakeItem(map.tiles[_x, _y], itemObject))
+                    if (TryToTakeItem(map.tiles[_x, _y], itemObject, amount))
                         return (map.tiles[_x, _y]);
                 }
             }
@@ -96,11 +96,16 @@ public class MapManager : MonoBehaviour
         return null;
     }
 
-    private bool TryToTakeItem(Tile tile, ItemObject itemObject)
+    private bool TryToTakeItem(Tile tile, ItemObject itemObject, int amount)
     {
         if (tile.itemObject == null)
         {
-            tile.itemObject = itemObject;
+            tile.itemObject = new ItemObject(itemObject.item, amount);
+            return true;
+        }
+        if (tile.itemObject.item == itemObject.item && itemObject.item.stackable)
+        {
+            tile.itemObject.amount += amount;
             return true;
         }
         return false;

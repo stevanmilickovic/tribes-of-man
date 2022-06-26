@@ -92,12 +92,12 @@ public class Inventory
         }
     }
 
-    public void DropItem(int x, int y, int slotNumber)
+    public void DropItem(int x, int y, int slotNumber, int amount)
     {
         if (slots[slotNumber] == null)
             return;
 
-        if (MapManager.Singleton.DropItem(x, y, slots[slotNumber]) != null)
+        if (MapManager.Singleton.DropItem(x, y, slots[slotNumber], amount) != null)
         {
             slots[slotNumber] = null;
         }

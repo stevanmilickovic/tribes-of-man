@@ -35,7 +35,7 @@ public class DisplayInventory : MonoBehaviour
     private Equipment tools;
     public GameObject mouseObjectPrefab;
     public GameObject slot;
-    private GameObject[] slots = new GameObject[14];
+    public GameObject[] slots = new GameObject[14];
     public int numberOfAwaitedResponses = 0;
 
     private bool leftClick = false;
@@ -195,6 +195,9 @@ public class DisplayInventory : MonoBehaviour
         ItemObject item2 = GetItem(slot2);
 
         int amount = 0;
+        if (leftClick) amount = 0;
+        else if (rightClick) amount = 1;
+        else if (middleClick) amount = item1 != null ? (int)Mathf.Floor(item1.amount / 2) : 0;
 
         int i1 = GetIndex(slot1);
         int i2 = GetIndex(slot2);
@@ -202,74 +205,46 @@ public class DisplayInventory : MonoBehaviour
         Inventory inventory1 = GetInventory(i1);
         Inventory inventory2 = GetInventory(i2);
 
-        if (!inventory1.CanAddItem(item2) || !inventory2.CanAddItem(item1))
+        if (i1 == i2)
         {
-            UpdateInventory();
+            UpdateSlotDisplay(Singleton.slots[i1], inventory1.slots[GetSlotNumber(i1)]);
+            UpdateSlotDisplay(Singleton.slots[i2], inventory2.slots[GetSlotNumber(i2)]);
             return;
         }
 
-        if (leftClick)
-        {
-            if (item1 != null && item2 != null && item1.item == item2.item && item2.item.stackable)
-            {
-                item2.amount += item1.amount;
-                inventory1.slots[GetSlotNumber(i1)] = null;
-            }
-            else
-            {
-                inventory1.slots[GetSlotNumber(i1)] = item2;
-                inventory2.slots[GetSlotNumber(i2)] = item1;
-            }
-        }
-        else if (rightClick)
-        {
-            if (item2 == null)
-            {
-                inventory1.ReduceSlotAmount(GetSlotNumber(i1));
-                inventory2.slots[GetSlotNumber(i2)] = new ItemObject(item1.item, 1);
-                amount = 1;
-            }
-            else if (item2.item == item1.item && item2.item.stackable)
-            {
-                inventory1.ReduceSlotAmount(GetSlotNumber(i1));
-                item2.amount += 1;
-                amount = 1;
-            }
-        }
-        else if (middleClick)
-        {
-            if (item2 == null)
-            {
-                inventory2.slots[GetSlotNumber(i2)] = new ItemObject(item1.item, (int)Mathf.Floor(item1.amount / 2));
-                amount = (int)Mathf.Floor(item1.amount / 2);
-                inventory1.ReduceSlotAmountByNumber(GetSlotNumber(i1), (int)Mathf.Floor(item1.amount / 2));
-            }
-            else if (item2.item == item1.item && item2.item.stackable)
-            {
-                item2.amount += (int)Mathf.Floor(item1.amount / 2);
-                amount = (int)Mathf.Floor(item1.amount / 2);
-                inventory1.ReduceSlotAmountByNumber(GetSlotNumber(i1), (int)Mathf.Floor(item1.amount / 2));
-            }
-        }
+        InventoryManager.MoveItemsAndParseState(NetworkManager.Singleton.ServerTick, i1, amount, i2, false);
 
-        UpdateSlotDisplay(slot1, item2);
-        UpdateSlotDisplay(slot2, item1);
+        UpdateSlotDisplay(Singleton.slots[i1], inventory1.slots[GetSlotNumber(i1)]);
+        UpdateSlotDisplay(Singleton.slots[i2], inventory2.slots[GetSlotNumber(i2)]);
 
-        PlayerManager.Singleton.MoveItems(GetIndex(mouseItem.slot), amount, GetIndex(mouseItem.hoverSlot));
+        PlayerManager.Singleton.MoveItems(NetworkManager.Singleton.ServerTick, i1, amount, i2);
     }
 
     public void TemporarilyDropItem(GameObject slot)
     {
+        if (GetItem(slot) == null) return;
         int i = GetIndex(slot);
-        GetInventory(i).slots[GetSlotNumber(i)] = null;
-        UpdateSlotDisplay(slot, null);
-        PlayerManager.Singleton.DropItem(GetIndex(slot));
+        ItemObject item = GetItem(slot);
+
+        int amount = 0;
+        if (leftClick) amount = 0;
+        else if (rightClick) amount = 1;
+        else if (middleClick) amount = item != null ? (int)Mathf.Floor(item.amount / 2) : 0;
+        if (amount == 0)
+            GetInventory(i).slots[GetSlotNumber(i)] = null;
+        else
+            GetInventory(i).ReduceSlotAmountByNumber(GetSlotNumber(i), amount);
+
+
+        InventoryManager.CreateInventoryState(NetworkManager.Singleton.ServerTick, i, 0, 0, true, InventoryManager.lastAddedState);
+        UpdateSlotDisplay(slot, GetInventory(i).slots[GetSlotNumber(i)]);
+        PlayerManager.Singleton.DropItem(GetIndex(slot), amount);
     }
 
     public void AttemptCraftItems(GameObject slot, Tile tile)
     {
         int i = GetIndex(slot);
-        Crafting.Singleton.Craft(GetInventory(i), GetSlotNumber(i), tile.x, tile.y);
+        Crafting.Singleton.Craft(GetInventory(i), i, tile.x, tile.y);
     }
 
     public void AttemptBuildItems(GameObject slot, Tile tile)
@@ -279,6 +254,7 @@ public class DisplayInventory : MonoBehaviour
         if (buildingSuccessful)
         {
             GetInventory(i).ReduceSlotAmount(GetSlotNumber(i));
+            InventoryManager.CreateInventoryState(NetworkManager.Singleton.ServerTick, i, 0, 0, true, InventoryManager.lastAddedState);
             PlayerManager.Singleton.Build(i, tile.x, tile.y);
         }
     }
@@ -385,8 +361,8 @@ public class DisplayInventory : MonoBehaviour
     public Tile GetTile()
     {
         Vector3 mousePosition = PlayerManager.Singleton.mainCamera.ScreenToWorldPoint(Input.mousePosition);
-        int tileX = (int)(mousePosition.x) % 50;
-        int tileY = (int)(mousePosition.y) % 50;
+        int tileX = (int)(mousePosition.x);
+        int tileY = (int)(mousePosition.y);
         Tile tile = null;
         if (tileX >= 0 && tileY >= 0)
             tile = MapManager.Singleton.tiles[(tileX, tileY)];

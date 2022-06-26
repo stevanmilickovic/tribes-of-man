@@ -32,7 +32,6 @@ public class PlayerManager : MonoBehaviour
     public Dictionary<int, Player> players;
     public int myId = -1;
     private bool[] inputs = new bool[4];
-    private int awaitedInventoryUpdates = 0;
 
     public Camera mainCamera;
     public bool cinematicMode;
@@ -52,7 +51,7 @@ public class PlayerManager : MonoBehaviour
     private void HandleInputs()
     {
         GetInputs();
-        if (Input.GetKey(KeyCode.Mouse1))
+        if (Input.GetKeyDown(KeyCode.Mouse1))
             Pickup();
         if (Input.GetKeyDown(KeyCode.Mouse0))
             Attact();
@@ -219,14 +218,6 @@ public class PlayerManager : MonoBehaviour
 
     #region Inventory
 
-    public void UpdateInventory(Inventory inventory)
-    {
-        if(awaitedInventoryUpdates <= 1)
-            myPlayer.inventory = inventory;
-        awaitedInventoryUpdates--;
-        myPlayer.CheckEquipment();
-    }
-
     public void Pickup()
     {
         Vector3 mousePosition = mainCamera.ScreenToWorldPoint(Input.mousePosition);
@@ -244,45 +235,45 @@ public class PlayerManager : MonoBehaviour
         message.Add(x);
         message.Add(y);
         NetworkManager.Singleton.Client.Send(message);
-        awaitedInventoryUpdates++;
     }
 
-    public void MoveItems(int slot1, int amount, int slot2)
+    public void MoveItems(ushort tick, int slot1, int amount, int slot2)
     {
         Message message = Message.Create(MessageSendMode.reliable, ClientToServerId.moveItems);
+        message.Add(tick);
         message.Add(slot1);
         message.Add(amount);
         message.Add(slot2);
         NetworkManager.Singleton.Client.Send(message);
-        awaitedInventoryUpdates++;
     }
 
-    public void DropItem(int slot)
+    public void DropItem(int slot, int amount)
     {
         Message message = Message.Create(MessageSendMode.reliable, ClientToServerId.drop);
+        message.Add(NetworkManager.Singleton.ServerTick);
         message.Add(slot);
+        message.Add(amount);
         NetworkManager.Singleton.Client.Send(message);
-        awaitedInventoryUpdates++;
     }
 
     public void CraftItems(int slot, int tileX, int tileY)
     {
         Message message = Message.Create(MessageSendMode.reliable, ClientToServerId.craft);
+        message.Add(NetworkManager.Singleton.ServerTick);
         message.Add(slot);
         message.Add(tileX);
         message.Add(tileY);
         NetworkManager.Singleton.Client.Send(message);
-        awaitedInventoryUpdates++;
     }
 
     public void Build(int slot, int tileX, int tileY)
     {
         Message message = Message.Create(MessageSendMode.reliable, ClientToServerId.build);
+        message.Add(NetworkManager.Singleton.ServerTick);
         message.Add(slot);
         message.Add(tileX);
         message.Add(tileY);
         NetworkManager.Singleton.Client.Send(message);
-        awaitedInventoryUpdates++;
     }
 
     #endregion

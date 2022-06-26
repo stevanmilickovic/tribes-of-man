@@ -20,12 +20,19 @@ public static class Crafting
         recipes.Add((item1, item2), (result, resultAmount));
     }
 
-    public static void Craft(ushort clientId, int slot, int tileX, int tileY)
+    public static void Craft(ushort clientId, ushort tick, int slot, int tileX, int tileY)
     {
         Player player = PlayerManager.Singleton.playersByClientId[clientId];
         ItemObject item = InventoryUtil.GetItemObjectFromPlayer(player, slot);
         Tile tile = MapManager.Singleton.map.tiles[tileX, tileY];
         Tile droppedTile = null;
+
+        if (!MapUtil.IsWithinRange(tileX, tileY, player.transform.position))
+        {
+            PlayerSend.SendInventoryMessage(player, clientId, tick);
+            MapSend.SendTileMessage(tile);
+            return;
+        }
 
         if (tile.itemObject != null && item != null && GetRecipe(item, tile.itemObject) != null)
         {
@@ -33,6 +40,7 @@ public static class Crafting
             {
                 tile.itemObject = null;
                 tile.SpawnStructure(StructureManager.Singleton.structuresByName["Frame"]);
+                InventoryUtil.GetPlayerInventoryBySlot(player, slot).ReduceSlotAmount(InventoryUtil.GetRelativeSlotNumber(slot));
             }
             else
             {
@@ -44,7 +52,7 @@ public static class Crafting
                 }
                 else
                 {
-                    droppedTile = MapManager.Singleton.DropItem(tileX, tileY, craftedObject);
+                    droppedTile = MapManager.Singleton.DropItem(tileX, tileY, craftedObject, 1);
                     if (droppedTile != null)
                     {
                         tile.itemObject.amount -= 1;
@@ -57,7 +65,7 @@ public static class Crafting
         if (droppedTile != null)
             MapSend.SendTileMessage(droppedTile);
         MapSend.SendTileMessage(tile);
-        PlayerSend.SendInventoryMessage(player, clientId);
+        PlayerSend.SendInventoryMessage(player, clientId, tick);
     }
 
     private static ItemObject GetRecipe(ItemObject item1, ItemObject item2)

@@ -42,8 +42,9 @@ public class Crafting : MonoBehaviour
         recipes.Add((item1, item2), (result, resultAmount));
     }
 
-    public void Craft(Inventory inventory ,int slot, int tileX, int tileY)
+    public void Craft(Inventory inventory, int absoluteSlot, int tileX, int tileY)
     {
+        int slot = InventoryUtil.GetSlotNumber(absoluteSlot);
         ItemObject item = inventory.slots[slot];
         Tile tile = MapManager.Singleton.tiles[(tileX, tileY)];
 
@@ -79,7 +80,8 @@ public class Crafting : MonoBehaviour
             MapManager.Singleton.UpdateTile(tile);
         }
 
-        PlayerManager.Singleton.CraftItems(slot, tileX, tileY);
+        InventoryManager.CreateInventoryState(NetworkManager.Singleton.ServerTick, absoluteSlot, 0, 0, true, InventoryManager.lastAddedState);
+        PlayerManager.Singleton.CraftItems(absoluteSlot, tileX, tileY);
     }
 
     public ItemObject GetRecipe(ItemObject item1, ItemObject item2)

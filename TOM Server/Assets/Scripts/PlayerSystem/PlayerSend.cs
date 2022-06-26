@@ -28,10 +28,13 @@ public static class PlayerSend
         }
     }
 
-    public static void SendInventoryMessage(Player player, ushort clientId)
+    public static void SendInventoryMessage(Player player, ushort clientId, ushort tick)
     {
         Message message = Message.Create(MessageSendMode.reliable, ServerToClientId.playerInventory);
+        message.Add(tick);
         MessageExtentions.Add(message, player.inventory);
+        MessageExtentions.AddEquipment(message, player.clothes);
+        MessageExtentions.AddEquipment(message, player.tools);
         NetworkManager.Singleton.Server.Send(message, clientId);
         PlayerManager.Singleton.playersByClientId[clientId].CheckEquipment();
     }
@@ -97,7 +100,8 @@ public static class PlayerSend
 
         foreach (Player playerInSight in player.currentChunk.playersInRange)
         {
-            NetworkManager.Singleton.Server.Send(message, playerInSight.currentClientId);
+            if (playerInSight != player)
+                NetworkManager.Singleton.Server.Send(message, playerInSight.currentClientId);
         }
     }
 }

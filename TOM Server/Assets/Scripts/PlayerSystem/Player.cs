@@ -125,10 +125,11 @@ public class Player : MonoBehaviour
         health -= damage;
         if (health <= 0)
         {
-            inventory.DropItem((int)transform.position.x, (int)transform.position.y, random.Next(9));
+            int randomSlot = random.Next(9);
+            inventory.DropItem((int)transform.position.x, (int)transform.position.y, randomSlot, inventory.slots[randomSlot].amount);
             transform.position = new Vector3(1, 1, 0);
             health = 100;
         }
-        PlayerSend.SendInventoryMessage(this, currentClientId);
+        PlayerSend.SendInventoryMessage(this, currentClientId, 1);
     }
 }

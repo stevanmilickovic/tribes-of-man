@@ -7,7 +7,7 @@ public static class InventoryHandle
     [MessageHandler((ushort)ServerToClientId.playerInventory)]
     public static void UpdateInventory(Message message)
     {
-        PlayerManager.Singleton.UpdateInventory(MessageExtensions.GetInventory(message));
+        InventoryManager.UpdateInventoryIfNecessary(message.GetUShort(), MessageExtensions.GetInventory(message), MessageExtensions.GetClothes(message), MessageExtensions.GetTools(message));
         DisplayInventory.Singleton.UpdateInventory();
     }
 

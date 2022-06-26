@@ -7,21 +7,27 @@ public static class InventoryManager
 
     public static void HandlePickupRequest(ushort clientId, int x, int y)
     {
+        if (!MapUtil.IsWithinRange(x, y, PlayerManager.Singleton.playersByClientId[clientId].transform.position))
+        {
+            PlayerSend.SendInventoryMessage(PlayerManager.Singleton.playersByClientId[clientId], clientId, 0);
+            return;
+        }
+
         Tile tile = MapManager.Singleton.map.tiles[x, y];
         if (tile.itemObject != null)
         {
             if (PlayerManager.Singleton.playersByClientId[clientId].inventory.Add(tile.itemObject))
                 tile.itemObject = null;
         }
-        PlayerSend.SendInventoryMessage(PlayerManager.Singleton.playersByClientId[clientId], clientId);
+        PlayerSend.SendInventoryMessage(PlayerManager.Singleton.playersByClientId[clientId], clientId, 0);
         MapSend.SendTileMessage(tile);
     }
 
-    public static void MoveItems(ushort fromClientId, int slot1, int amount, int slot2)
+    public static void MoveItems(ushort fromClientId, ushort tick, int slot1, int amount, int slot2)
     {
         if (slot1 == slot2)
         {
-            PlayerSend.SendInventoryMessage(PlayerManager.Singleton.playersByClientId[fromClientId], fromClientId);
+            PlayerSend.SendInventoryMessage(PlayerManager.Singleton.playersByClientId[fromClientId], fromClientId, tick);
             PlayerSend.SendPlayerEquipment(PlayerManager.Singleton.playersByClientId[fromClientId]);
             return;
         }
@@ -34,7 +40,8 @@ public static class InventoryManager
 
         if (!inventory1.CanAddItem(item2) || !inventory2.CanAddItem(item1))
         {
-            PlayerSend.SendInventoryMessage(PlayerManager.Singleton.playersByClientId[fromClientId], fromClientId);
+            PlayerSend.SendInventoryMessage(PlayerManager.Singleton.playersByClientId[fromClientId], fromClientId, tick);
+            PlayerSend.SendPlayerEquipment(PlayerManager.Singleton.playersByClientId[fromClientId]);
             return;
         }
 
@@ -78,58 +85,50 @@ public static class InventoryManager
             }
         }
 
-        PlayerSend.SendInventoryMessage(PlayerManager.Singleton.playersByClientId[fromClientId], fromClientId);
+        PlayerSend.SendInventoryMessage(PlayerManager.Singleton.playersByClientId[fromClientId], fromClientId, tick);
         PlayerSend.SendPlayerEquipment(PlayerManager.Singleton.playersByClientId[fromClientId]);
     }
 
-    public static void DropItem(ushort clientId, int slot)
+    public static void DropItem(ushort clientId, ushort tick, int slot, int amount)
     {
         Player player = PlayerManager.Singleton.playersByClientId[clientId];
         ItemObject itemObject = InventoryUtil.GetItemObjectFromPlayer(player, slot);
+        Inventory inventory = InventoryUtil.GetInventory(slot, clientId);
+        int relativeSlotNumber = InventoryUtil.GetSlotNumber(slot);
+        amount = amount == 0 ? itemObject.amount : amount;
         if (itemObject == null)
             return;
 
-        Tile tile = MapManager.Singleton.DropItem((int)player.gameObject.transform.position.x, (int)player.gameObject.transform.position.y, itemObject);
+        Tile tile = MapManager.Singleton.DropItem((int)player.gameObject.transform.position.x, (int)player.gameObject.transform.position.y, itemObject, amount);
 
         if (tile != null)
         {
-            EmptyPlayerInventorySlot(player, slot);
+            inventory.ReduceSlotAmountByNumber(relativeSlotNumber, amount);
             MapSend.SendTileMessage(tile);
         }
-        PlayerSend.SendInventoryMessage(player, clientId);
+        PlayerSend.SendInventoryMessage(player, clientId, tick);
     }
 
-    private static void EmptyPlayerInventorySlot(Player player, int slot)
+    public static void CraftItems(ushort clientId, ushort tick, int slot, int tileX, int tileY)
     {
-        if (slot < 9)
-        {
-            player.inventory.slots[InventoryUtil.GetRelativeSlotNumber(slot)] = null;
-            return;
-        }
-        if (slot < 12)
-        {
-            player.clothes.slots[InventoryUtil.GetRelativeSlotNumber(slot)] = null;
-            return;
-        }
-        if (slot < 14)
-        {
-            player.tools.slots[InventoryUtil.GetRelativeSlotNumber(slot)] = null;
-            return;
-        }
+        Crafting.Craft(clientId, tick, slot, tileX, tileY);
     }
 
-    public static void CraftItems(ushort clientId, int slot, int tileX, int tileY)
+    public static void BuildStructure(ushort clientId, ushort tick, int slot, int tileX, int tileY)
     {
-        Crafting.Craft(clientId, slot, tileX, tileY);
-    }
 
-    public static void BuildStructure(ushort clientId, int slot, int tileX, int tileY)
-    {
+        if (!MapUtil.IsWithinRange(tileX, tileY, PlayerManager.Singleton.playersByClientId[clientId].transform.position))
+        {
+            PlayerSend.SendInventoryMessage(PlayerManager.Singleton.playersByClientId[clientId], clientId, tick);
+            MapSend.SendTileMessage(MapUtil.GetTile(tileX, tileY));
+            return;
+        }
+
         Inventory inventory = PlayerManager.Singleton.playersByClientId[clientId].inventory;
         bool buildSuccessful = Building.Build(PlayerManager.Singleton.playersByClientId[clientId].inventory.slots[slot], MapUtil.GetTile(tileX, tileY));
         if (buildSuccessful)
             inventory.ReduceSlotAmount(slot);
-        PlayerSend.SendInventoryMessage(PlayerManager.Singleton.playersByClientId[clientId], clientId);
+        PlayerSend.SendInventoryMessage(PlayerManager.Singleton.playersByClientId[clientId], clientId, tick);
     }
 
 }
