@@ -12,7 +12,8 @@ public enum ClientToServerId : ushort
     moveItems,
     drop,
     attack,
-    build
+    build,
+    eat
 }
 public enum ServerToClientId : ushort
 {

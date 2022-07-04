@@ -33,6 +33,14 @@ public static class InventoryHandle
         InventoryManager.DropItem(fromClientId, tick, slot, amount);
     }
 
+    [MessageHandler((ushort)ClientToServerId.eat)]
+    public static void PlayerItemEat(ushort fromClientId, Message message)
+    {
+        ushort tick = message.GetUShort();
+        int slot = message.GetInt();
+        InventoryManager.EatItem(fromClientId, tick, slot);
+    }
+
     [MessageHandler((ushort)ClientToServerId.craft)]
     public static void PlayerCraft(ushort fromClientId, Message message)
     {

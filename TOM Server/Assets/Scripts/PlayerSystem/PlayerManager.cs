@@ -86,6 +86,7 @@ public class PlayerManager : MonoBehaviour
         newPlayerScript.name = username;
         newPlayerScript.id = playersById.Count;
         newPlayerScript.health = 100;
+        newPlayerScript.hunger = 2;
         newPlayerScript.pivot = newPlayer.transform.GetChild(1).gameObject;
         newPlayerScript.hit = newPlayerScript.pivot.transform.GetChild(0).GetComponent<Hit>();
         newPlayerScript.inventory = new Inventory(newPlayerScript.id, 9);
@@ -132,5 +133,35 @@ public class PlayerManager : MonoBehaviour
         Player player = playersByClientId[clientId];
         player.pivot.transform.right = direction;
         player.Attack(direction);
+    }
+
+    public void DropAllPlayersHunger()
+    {
+        foreach (KeyValuePair<int, Player> keyValuePair in playersById)
+        {
+            Player player = keyValuePair.Value;
+            player.hunger -= 1;
+            if (player.hunger <= 0)
+            {
+                player.hunger = 0;
+                player.malnourished = true;
+            }
+            else
+            {
+                player.malnourished = false;
+            }
+        }
+    }
+
+    public void DropMalnourishedPlayersHealth()
+    {
+        foreach (KeyValuePair<int, Player> keyValuePair in playersById)
+        {
+            Player player = keyValuePair.Value;
+            if (player.malnourished)
+            {
+                player.health -= 1;
+            }
+        }
     }
 }

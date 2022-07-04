@@ -6,6 +6,7 @@ public class StructureObject : MonoBehaviour
     public int health;
     public bool collapsed;
     public int collapsedHealth;
+    public Tile tile;
 
     public StructureObject(Structure _structure, bool _collapsed, int _health, int _collapsedHealth)
     {
@@ -23,11 +24,31 @@ public class StructureObject : MonoBehaviour
         collapsedHealth = _structure.maxCollapsedHealth;
     }
 
+    public void MakeBuildingProgress(int progress)
+    {
+        if (health == structure.maxHealth) return;
+        if (collapsedHealth < structure.maxCollapsedHealth)
+        {
+            collapsedHealth += progress;
+            progress = 0;
+            if (collapsedHealth > structure.maxCollapsedHealth)
+            {
+                progress = collapsedHealth - structure.maxCollapsedHealth;
+                collapsedHealth = structure.maxCollapsedHealth;
+                collapsed = false;
+            }
+        }
+        if (progress > 0)
+        {
+            health += progress;
+            collapsed = health <= 0;
+            if (health > structure.maxHealth) health = structure.maxHealth;
+        }
+        MapSend.SendTileMessage(tile);
+    }
+
     public void TakeDamage(int damage)
     {
-
-        Tile tile = MapUtil.GetTile(transform.position);
-
         if (!collapsed)
         {
             health -= damage;
@@ -42,7 +63,7 @@ public class StructureObject : MonoBehaviour
                 else
                 {
                     tile.DestroyStructure();
-                    tile.itemObject = new ItemObject(structure.item, 1);
+                    tile.itemObject = new ItemObject(structure.item, structure.itemAmount);
                 }
             }
         } 
@@ -52,7 +73,7 @@ public class StructureObject : MonoBehaviour
             if (collapsedHealth <= 0)
             {
                 tile.DestroyStructure();
-                tile.itemObject = new ItemObject(structure.item, 1);
+                tile.itemObject = new ItemObject(structure.item, structure.itemAmount);
             }
         }
 

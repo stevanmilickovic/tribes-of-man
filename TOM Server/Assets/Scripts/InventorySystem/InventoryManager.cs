@@ -109,6 +109,20 @@ public static class InventoryManager
         PlayerSend.SendInventoryMessage(player, clientId, tick);
     }
 
+    public static void EatItem(ushort clientId, ushort tick, int slot)
+    {
+        Player player = PlayerManager.Singleton.playersByClientId[clientId];
+        ItemObject itemObject = InventoryUtil.GetItemObjectFromPlayer(player, slot);
+        Inventory inventory = InventoryUtil.GetInventory(slot, clientId);
+        int relativeSlotNumber = InventoryUtil.GetSlotNumber(slot);
+        if (itemObject == null || itemObject.item.type != Item.Type.Food) return;
+
+        inventory.ReduceSlotAmount(relativeSlotNumber);
+        player.hunger += 80;
+        if (player.hunger > 100) player.hunger = 100;
+        PlayerSend.SendInventoryMessage(player, clientId, tick);
+    }
+
     public static void CraftItems(ushort clientId, ushort tick, int slot, int tileX, int tileY)
     {
         Crafting.Craft(clientId, tick, slot, tileX, tileY);

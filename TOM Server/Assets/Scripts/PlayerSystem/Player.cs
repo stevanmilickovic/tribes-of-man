@@ -18,6 +18,8 @@ public class Player : MonoBehaviour
     public ushort currentClientId;
     public string playerName;
     public int health;
+    public int hunger;
+    public bool malnourished = false;
     public GameObject pivot;
     public Hit hit;
     public Inventory inventory;

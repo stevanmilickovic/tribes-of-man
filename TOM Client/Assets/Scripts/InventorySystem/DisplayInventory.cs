@@ -132,6 +132,10 @@ public class DisplayInventory : MonoBehaviour
         {
             AttemptBuildItems(mouseItem.slot, tile);
         }
+        else if (IsOnPlayer())
+        {
+            TemporarilyEat(mouseItem.slot);
+        }
         else
         {
             TemporarilyDropItem(mouseItem.slot);
@@ -239,6 +243,16 @@ public class DisplayInventory : MonoBehaviour
         InventoryManager.CreateInventoryState(NetworkManager.Singleton.ServerTick, i, 0, 0, true, InventoryManager.lastAddedState);
         UpdateSlotDisplay(slot, GetInventory(i).slots[GetSlotNumber(i)]);
         PlayerManager.Singleton.DropItem(GetIndex(slot), amount);
+    }
+
+    public void TemporarilyEat(GameObject slot)
+    {
+        if (GetItem(slot) == null || GetItem(slot).item.type != Item.Type.Food) return;
+        int i = GetIndex(slot);
+        GetInventory(i).ReduceSlotAmount(GetSlotNumber(i));
+        InventoryManager.CreateInventoryState(NetworkManager.Singleton.ServerTick, i, 0, 0, true, InventoryManager.lastAddedState);
+        UpdateSlotDisplay(slot, GetInventory(i).slots[GetSlotNumber(i)]);
+        PlayerManager.Singleton.EatItem(i);
     }
 
     public void AttemptCraftItems(GameObject slot, Tile tile)
@@ -384,6 +398,16 @@ public class DisplayInventory : MonoBehaviour
             slot.GetComponent<Image>().sprite = null;
             slot.GetComponent<Image>().color = Color.clear;
         }
+    }
+
+    private bool IsOnPlayer()
+    {
+        RaycastHit2D[] hits = Physics2D.RaycastAll(Camera.main.ScreenToWorldPoint(Input.mousePosition), Vector2.zero);
+        foreach (RaycastHit2D hit in hits)
+        {
+            if (hit.transform.gameObject.tag == "myPlayer") return true;
+        }
+        return false;
     }
 
 }

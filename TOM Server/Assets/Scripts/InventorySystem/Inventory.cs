@@ -32,6 +32,7 @@ public class Inventory
         slots[1] = new ItemObject(ItemManager.Singleton.items[0], 1);
         slots[2] = new ItemObject(ItemManager.Singleton.items[1], 2);
         slots[3] = new ItemObject(ItemManager.Singleton.items[2], 1);
+        slots[4] = new ItemObject(ItemManager.Singleton.items[3], 2);
     }
 
     public bool Add(ItemObject itemObject)
@@ -101,6 +102,15 @@ public class Inventory
         {
             slots[slotNumber] = null;
         }
+    }
+
+    public int GetSlotThatContainsItem(Item item)
+    {
+        for (int i = 0; i < 9; i++)
+        {
+            if (slots[i] != null && slots[i].item == item) return i;
+        }
+        return -1;
     }
 
 }

@@ -14,7 +14,33 @@ public class Hit : MonoBehaviour
             {
                 ExecuteAttack(collider, player);
             }
+            if (player.equipmentType == Player.EquipmentType.HoldingTool)
+            {
+                ExecuteBuild(collider, player);
+            }
         }
+    }
+
+    private void ExecuteBuild(Collider2D collider, Player player)
+    {
+        if (collider.gameObject.tag == "Structure")
+        {
+            StructureObject hitStructure = collider.gameObject.GetComponent<StructureObject>();
+            hitStructure.MakeBuildingProgress(CalculateBuildingProgress(player, hitStructure));
+            PlayerSend.SendInventoryMessage(player, player.currentClientId, 0);
+        }
+    }
+
+    private int CalculateBuildingProgress(Player player, StructureObject structure)
+    {
+        int progress = 0;
+        int slotWithItemNeeded = player.inventory.GetSlotThatContainsItem(structure.structure.item);
+        if (slotWithItemNeeded != -1 && (structure.collapsed || structure.health < structure.structure.maxHealth))
+        {
+            progress = 20;
+            player.inventory.ReduceSlotAmount(slotWithItemNeeded);
+        }
+        return progress;
     }
 
     private void ExecuteAttack(Collider2D collider, Player player)

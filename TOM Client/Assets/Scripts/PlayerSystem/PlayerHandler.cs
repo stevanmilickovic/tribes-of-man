@@ -13,11 +13,12 @@ public static class PlayerHandler
         Vector2 position = message.GetVector2();
 
         int health = message.GetInt();
+        int hunger = message.GetInt();
 
         Equipment clothes = MessageExtensions.GetClothes(message);
         Equipment tools = MessageExtensions.GetTools(message);
 
-        PlayerManager.Singleton.SpawnPlayer(id, username, position, health, clothes, tools);
+        PlayerManager.Singleton.SpawnPlayer(id, username, position, health, hunger, clothes, tools);
     }
 
     [MessageHandler((ushort)ServerToClientId.yourPlayerId)]
@@ -34,9 +35,11 @@ public static class PlayerHandler
         Vector2 position = message.GetVector2();
 
         int health = message.GetInt();
+        int hunger = message.GetInt();
 
         PlayerManager.Singleton.UpdatePlayerPosition(id, tick, position);
         PlayerManager.Singleton.UpdatePlayerHealth(id, health);
+        PlayerManager.Singleton.UpdatePlayerHunger(id, hunger);
     }
 
 }

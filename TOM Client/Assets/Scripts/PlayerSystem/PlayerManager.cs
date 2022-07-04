@@ -87,19 +87,19 @@ public class PlayerManager : MonoBehaviour
         RefreshInputs();
     }
 
-    public void SpawnPlayer(int id, string username, Vector2 position, int health, Equipment clothes, Equipment tools)
+    public void SpawnPlayer(int id, string username, Vector2 position, int health, int hunger, Equipment clothes, Equipment tools)
     {
         if(id == myId)
         {
-            InstantiatePlayer(myPlayerPrefab, id, username, position, health, clothes, tools);
+            InstantiatePlayer(myPlayerPrefab, id, username, position, health, hunger, clothes, tools);
         }
         else
         {
-            InstantiatePlayer(playerPrefab, id, username, position, health, clothes, tools);
+            InstantiatePlayer(playerPrefab, id, username, position, health, hunger, clothes, tools);
         }
     }
 
-    private void InstantiatePlayer(GameObject playerObject ,int id, string username, Vector2 position, int health, Equipment clothes, Equipment tools)
+    private void InstantiatePlayer(GameObject playerObject ,int id, string username, Vector2 position, int health, int hunger, Equipment clothes, Equipment tools)
     {
 
         if (players.ContainsKey(id)) return;
@@ -107,7 +107,7 @@ public class PlayerManager : MonoBehaviour
         GameObject player = Instantiate(playerObject);
         player.transform.position = new Vector3(position.x, position.y, 0f);
         player.name = username;
-        Player playerScript = SetPlayerScript(player, id, username, health, clothes, tools);
+        Player playerScript = SetPlayerScript(player, id, username, health, hunger, clothes, tools);
         playerScript.nameText.GetComponent<TextMeshPro>().text = username;
         playerScript.CheckEquipment();
         players.Add(id, playerScript);
@@ -116,39 +116,44 @@ public class PlayerManager : MonoBehaviour
             MapUtil.GetChunk(position).players.Add(id, playerScript);
     }
 
-    private Player SetPlayerScript(GameObject newPlayer, int id, string username, int health, Equipment clothes, Equipment tools)
+    private Player SetPlayerScript(GameObject newPlayer, int id, string username, int health, int hunger, Equipment clothes, Equipment tools)
     {
         if (id == myId)
-            return SetMyPlayerScript(newPlayer, id, username, clothes, tools);
+            return SetMyPlayerScript(newPlayer, id, username, health, hunger, clothes, tools);
 
         Player newPlayerScript = newPlayer.AddComponent<Player>();
         newPlayerScript.username = username;
         newPlayerScript.id = id;
         newPlayerScript.health = health;
+        newPlayerScript.hunger = hunger;
         newPlayerScript.clothes = clothes;
         newPlayerScript.tools = tools;
 
         newPlayerScript.nameText = newPlayer.transform.GetChild(1).gameObject;
         newPlayerScript.healthText = newPlayer.transform.GetChild(2).gameObject;
-        newPlayerScript.leftArm = newPlayer.transform.GetChild(3).gameObject;
-        newPlayerScript.rightArm = newPlayer.transform.GetChild(4).gameObject;
+        newPlayerScript.hungerText = newPlayer.transform.GetChild(3).gameObject;
+        newPlayerScript.leftArm = newPlayer.transform.GetChild(4).gameObject;
+        newPlayerScript.rightArm = newPlayer.transform.GetChild(5).gameObject;
 
 
         return newPlayerScript;
     }
 
-    private Player SetMyPlayerScript(GameObject newPlayer, int id, string username, Equipment clothes, Equipment tools)
+    private Player SetMyPlayerScript(GameObject newPlayer, int id, string username, int health, int hunger, Equipment clothes, Equipment tools)
     {
         MyPlayer newPlayerScript = newPlayer.AddComponent<MyPlayer>();
         newPlayerScript.username = username;
         newPlayerScript.id = id;
+        newPlayerScript.health = health;
+        newPlayerScript.hunger = hunger;
         newPlayerScript.clothes = clothes;
         newPlayerScript.tools = tools;
 
         newPlayerScript.nameText = newPlayer.transform.GetChild(2).gameObject;
         newPlayerScript.healthText = newPlayer.transform.GetChild(3).gameObject;
-        newPlayerScript.leftArm = newPlayer.transform.GetChild(4).gameObject;
-        newPlayerScript.rightArm = newPlayer.transform.GetChild(5).gameObject;
+        newPlayerScript.hungerText = newPlayer.transform.GetChild(4).gameObject;
+        newPlayerScript.leftArm = newPlayer.transform.GetChild(5).gameObject;
+        newPlayerScript.rightArm = newPlayer.transform.GetChild(6).gameObject;
 
         myPlayer = newPlayerScript;
         if (!cinematicMode)
@@ -173,13 +178,14 @@ public class PlayerManager : MonoBehaviour
             Vector2 position = new Vector2(oldPlayer.transform.position.x, oldPlayer.transform.position.y);
             string username = players[id].username;
             int health = players[id].health;
+            int hunger = players[id].hunger;
             Equipment clothes = players[id].clothes;
             Equipment tools = players[id].tools;
 
             Destroy(oldPlayer);
             players.Remove(id);
 
-            SpawnPlayer(id, username, position, health, clothes, tools);
+            SpawnPlayer(id, username, position, health, hunger, clothes, tools);
         }
     }
 
@@ -204,6 +210,20 @@ public class PlayerManager : MonoBehaviour
         {
             myPlayer.health = health;
             myPlayer.healthText.GetComponent<TextMeshPro>().text = health.ToString();
+        }
+    }
+
+    public void UpdatePlayerHunger(int id, int hunger)
+    {
+        if (players.TryGetValue(id, out Player player) && id != myId)
+        {
+            player.hunger = hunger;
+            player.hungerText.GetComponent<TextMeshPro>().text = hunger.ToString();
+        }
+        else if (id == myId)
+        {
+            myPlayer.hunger = hunger;
+            myPlayer.hungerText.GetComponent<TextMeshPro>().text = hunger.ToString();
         }
     }
 
@@ -254,6 +274,14 @@ public class PlayerManager : MonoBehaviour
         message.Add(NetworkManager.Singleton.ServerTick);
         message.Add(slot);
         message.Add(amount);
+        NetworkManager.Singleton.Client.Send(message);
+    }
+
+    public void EatItem(int slot)
+    {
+        Message message = Message.Create(MessageSendMode.reliable, ClientToServerId.eat);
+        message.Add(NetworkManager.Singleton.ServerTick);
+        message.Add(slot);
         NetworkManager.Singleton.Client.Send(message);
     }
 

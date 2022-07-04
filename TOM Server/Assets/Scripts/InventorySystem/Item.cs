@@ -7,7 +7,8 @@ public class Item
         Tool,
         Shield,
         Clothing,
-        Armor
+        Armor,
+        Food
     }
 
     public Type type;

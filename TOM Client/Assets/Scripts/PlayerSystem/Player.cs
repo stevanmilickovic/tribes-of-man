@@ -19,11 +19,13 @@ public class Player : MonoBehaviour
     public int id;
     public string username;
     public int health;
+    public int hunger;
     public Equipment clothes;
     public Equipment tools;
 
     public GameObject nameText;
     public GameObject healthText;
+    public GameObject hungerText;
 
     public GameObject leftArm;
     public GameObject rightArm;

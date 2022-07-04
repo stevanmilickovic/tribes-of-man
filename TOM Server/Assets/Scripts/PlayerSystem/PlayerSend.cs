@@ -88,6 +88,7 @@ public static class PlayerSend
         message.AddUShort(NetworkManager.Singleton.CurrentTick);
         message.AddVector2(new Vector2(player.gameObject.transform.position.x, player.gameObject.transform.position.y));
         message.AddInt(player.health);
+        message.AddInt(player.hunger);
         NetworkManager.Singleton.Server.Send(message, clientId);
     }
 

@@ -30,12 +30,21 @@ public class Tile
 
     public void SpawnStructure(Structure structure)
     {
-        structureObject = StructureManager.Singleton.SpawnStructure(this, structure);
+        if (!structure.collapsable)
+        {
+            structureObject = StructureManager.Singleton.SpawnStructure(this, structure);
+            return;
+        }
+        else
+        {
+            structureObject = StructureManager.Singleton.SpawnCollapsedStructure(this, structure);
+            return;
+        }
     }
 
     public void CollapseStructure()
     {
-
+        structureObject.collapsed = true;
     }
 
     public void DestroyStructure()

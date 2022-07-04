@@ -20,10 +20,11 @@ public class Structure
     public int id;
     public string name;
     public Item item;
+    public int itemAmount;
     public int maxHealth;
     public int maxCollapsedHealth;
 
-    public Structure(Type _type, SizeType _sizeType, bool _collapsable, int _id, string _name, Item _item, int _maxHealth, int _maxCollapsedHealth)
+    public Structure(Type _type, SizeType _sizeType, bool _collapsable, int _id, string _name, Item _item, int _itemAmount, int _maxHealth, int _maxCollapsedHealth)
     {
         type = _type;
         sizeType = _sizeType;
@@ -31,6 +32,7 @@ public class Structure
         id = _id;
         name = _name;
         item = _item;
+        itemAmount = _itemAmount;
         maxHealth = _maxHealth;
         maxCollapsedHealth = _maxCollapsedHealth;
     }

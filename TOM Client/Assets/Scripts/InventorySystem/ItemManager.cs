@@ -36,6 +36,7 @@ public class ItemManager : MonoBehaviour
         AddToolItem(0, "stick", false, "stick", 5);
         AddItem(1, Item.Type.Resource, "wood", true, "wood");
         AddWeaponItem(2, "sword", false, "sword", 10);
+        AddFoodItem(3, "berries", "berries 1");
     }
 
     private Item AddItem(int id, Item.Type type, string name, bool isStackable, string spriteName)
@@ -57,6 +58,14 @@ public class ItemManager : MonoBehaviour
     private ToolItem AddToolItem(int id, string name, bool isStackable, string spriteName, int effect)
     {
         ToolItem newItem = new ToolItem(id, name, isStackable, GetSprite(spriteName), effect);
+        items.Add(id, newItem);
+        itemsByName.Add(name, newItem);
+        return newItem;
+    }
+
+    private Item AddFoodItem(int id, string name, string spriteName)
+    {
+        Item newItem = new Item(Item.Type.Food, id, name, true, GetSprite(spriteName));
         items.Add(id, newItem);
         itemsByName.Add(name, newItem);
         return newItem;
