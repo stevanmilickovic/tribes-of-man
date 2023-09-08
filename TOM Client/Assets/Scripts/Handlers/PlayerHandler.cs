@@ -44,7 +44,8 @@ public static class PlayerHandler
         int fromPlayerId = message.GetInt();
         MeleeAttackTypes type = (MeleeAttackTypes)message.GetInt();
         Vector2 direction = message.GetVector2();
-        Debug.Log($"Received attack from {fromPlayerId}, type: {type} direction: {direction}");
+
+        PlayerManager.Singleton.ChargePlayerAttack(fromPlayerId, type, direction);
     }
 
     [MessageHandler((ushort)ServerToClientId.executingMeleeAttack)]

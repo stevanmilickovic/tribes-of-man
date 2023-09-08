@@ -95,10 +95,12 @@ TextureImporter:
     externalNormalMap: 0
     heightScale: 0.25
     normalMapFilter: 0
+    flipGreenChannel: 0
   isReadable: 0
   streamingMipmaps: 0
   streamingMipmapsPriority: 0
   vTOnly: 0
+  ignoreMipmapLimit: 0
   grayScaleToAlpha: 0
   generateCubemap: 6
   cubemapConvolution: 0
@@ -137,6 +139,7 @@ TextureImporter:
   textureFormatSet: 0
   ignorePngGamma: 0
   applyGammaDecoding: 0
+  swizzle: 50462976
   cookieLightType: 0
   platformSettings:
   - serializedVersion: 3
@@ -149,6 +152,7 @@ TextureImporter:
     crunchedCompression: 0
     allowsAlphaSplitting: 0
     overridden: 0
+    ignorePlatformSupport: 0
     androidETC2FallbackOverride: 0
     forceMaximumCompressionQuality_BC6H_BC7: 0
   - serializedVersion: 3
@@ -161,6 +165,33 @@ TextureImporter:
     crunchedCompression: 0
     allowsAlphaSplitting: 0
     overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 3
+    buildTarget: WebGL
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: 4
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 3
+    buildTarget: Server
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: 4
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
     androidETC2FallbackOverride: 0
     forceMaximumCompressionQuality_BC6H_BC7: 0
   spriteSheet:
@@ -701,9 +732,34 @@ TextureImporter:
     edges: []
     weights: []
     secondaryTextures: []
-  spritePackingTag: 
+    nameFileIdTable:
+      map-texture-v2-without-edges_0: -623579122066601907
+      map-texture-v2-without-edges_1: 3837380450105252829
+      map-texture-v2-without-edges_10: 46714216556584395
+      map-texture-v2-without-edges_11: -1020973138079483834
+      map-texture-v2-without-edges_12: 4091304367885627568
+      map-texture-v2-without-edges_13: 2774247163556211820
+      map-texture-v2-without-edges_14: 5737266453505113245
+      map-texture-v2-without-edges_15: -4995538357087043645
+      map-texture-v2-without-edges_16: -7342003743259099788
+      map-texture-v2-without-edges_17: -6277173577528061027
+      map-texture-v2-without-edges_18: 1263914351850816079
+      map-texture-v2-without-edges_19: 110024842703644359
+      map-texture-v2-without-edges_2: -3800088198639225641
+      map-texture-v2-without-edges_20: 8513754278105865525
+      map-texture-v2-without-edges_21: -1023123195323502614
+      map-texture-v2-without-edges_22: -8470048145847588236
+      map-texture-v2-without-edges_23: -3432435747517909590
+      map-texture-v2-without-edges_24: 8191396342138687457
+      map-texture-v2-without-edges_3: -5212240444674611496
+      map-texture-v2-without-edges_4: 5240220917261924927
+      map-texture-v2-without-edges_5: -833048483934354932
+      map-texture-v2-without-edges_6: 6423056328306468867
+      map-texture-v2-without-edges_7: 5233840808303665013
+      map-texture-v2-without-edges_8: -1325508739851086084
+      map-texture-v2-without-edges_9: -6150703021805467417
+  mipmapLimitGroupName: 
   pSDRemoveMatte: 0
-  pSDShowRemoveMatteOption: 0
   userData: 
   assetBundleName: 
   assetBundleVariant: 

@@ -30,6 +30,7 @@ public class PlayerController : MonoBehaviour
     public GameObject hit;
     public PlayerAnimator playerAnimator;
     public bool isChargingAttack = false;
+    Vector2 hitDirection;
 
     private void Awake()
     {
@@ -56,7 +57,7 @@ public class PlayerController : MonoBehaviour
         GetMovementInputs();
         GetMouseInputs();
 
-        //if (playerAnimator != null && !playerAnimator.isCharging) playerAnimator.TurnPlayerBasedOnInputs(inputs);
+        if (playerAnimator != null && !playerAnimator.isCharging) playerAnimator.TurnPlayerBasedOnInputs(inputs);
     }
 
     private void GetMouseInputs()
@@ -70,25 +71,21 @@ public class PlayerController : MonoBehaviour
             {
                 if (Input.GetKeyDown(KeyCode.Mouse0))
                 {
-                    isChargingAttack = true;
                     Attack(MeleeAttackTypes.Left);
                 }
 
                 if (Input.GetKeyDown(KeyCode.Mouse1))
                 {
-                    isChargingAttack = true;
                     Attack(MeleeAttackTypes.Right);
                 }
 
                 if (Input.GetAxisRaw("Mouse ScrollWheel") > 0)
                 {
-                    isChargingAttack = true;
                     Attack(MeleeAttackTypes.Up);
                 }
 
                 if (Input.GetAxisRaw("Mouse ScrollWheel") < 0)
                 {
-                    isChargingAttack = true;
                     Attack(MeleeAttackTypes.Down);
                 }
             }
@@ -106,13 +103,15 @@ public class PlayerController : MonoBehaviour
         if (hit == null) return;
         Vector2 mouseScreenPosition = mainCamera.ScreenToWorldPoint(Input.mousePosition);
         Vector2 direction = (mouseScreenPosition - (Vector2)hit.transform.position).normalized;
-        hit.transform.right = direction;
+        hitDirection = direction;
+        //hit.transform.right = direction;
     }
 
     private void Attack(MeleeAttackTypes attackType)
     {
         if (hit == null) return;
-        Vector2 direction = hit.transform.right;
+        isChargingAttack = true;
+        Vector2 direction = hitDirection;
         playerAnimator.MeleeCharge(attackType, direction);
         PlayerSender.SendAttackMessage(attackType, direction);
     }

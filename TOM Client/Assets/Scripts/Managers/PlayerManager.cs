@@ -133,13 +133,21 @@ public class PlayerManager : MonoBehaviour
         }
     }
 
+    public void ChargePlayerAttack(int id, MeleeAttackTypes type, Vector2 direction)
+    {
+        Player player = players[id];
+        PlayerAnimator playerAnimator = player.gameObject.GetComponent<PlayerAnimator>();
+
+        if (myId != id) playerAnimator.MeleeCharge(type, direction);
+    }
+
     public void ExecutePlayerAttack(int id, MeleeAttackTypes type, Vector2 direction)
     {
 
         Player player = players[id];
         PlayerAnimator playerAnimator = player.gameObject.GetComponent<PlayerAnimator>();
 
-        playerAnimator.StopMeleeCharge();
+        playerAnimator.ExecuteMeleeAttack(type, direction);
 
         if (myId == id) PlayerController.Singleton.isChargingAttack = false;
     }

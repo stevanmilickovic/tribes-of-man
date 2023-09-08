@@ -18,6 +18,14 @@ public class PlayerAnimator : MonoBehaviour
     public GameObject armLeftObject;
     public GameObject armRightObject;
 
+    public static float ATTACK_SPRITE_SCALE = 5f;
+    public Animator slashAnimator;
+    public GameObject slashObject;
+    public Animator stabAnimator;
+    public GameObject stabObject;
+    public Animator crushAnimator;
+    public GameObject crushObject;
+
     private float speed;
     private Vector2 lastPosition;
     public bool isMyPlayer = false;
@@ -29,10 +37,18 @@ public class PlayerAnimator : MonoBehaviour
 
     public bool isCharging = false;
 
+    public GameObject hit;
+
     // Start is called before the first frame update
     void Start()
     {
         animator = transform.GetChild(1).gameObject.GetComponent<Animator>();
+        slashObject = transform.GetChild(2).transform.GetChild(0).gameObject;
+        slashAnimator = slashObject.GetComponent<Animator>();
+        stabObject = transform.GetChild(2).transform.GetChild(1).gameObject;
+        stabAnimator = stabObject.GetComponent<Animator>();
+        crushObject = transform.GetChild(2).transform.GetChild(2).gameObject;
+        crushAnimator = crushObject.GetComponent<Animator>();
         body = transform.GetChild(1).gameObject;
         torsoObject = body.transform.GetChild(0).gameObject;
         headObject = body.transform.GetChild(1).gameObject;
@@ -49,7 +65,7 @@ public class PlayerAnimator : MonoBehaviour
         animator.SetBool("Charging Up", chargingUp);
         animator.SetBool("Charging Down", chargingDown);
 
-        if (!isCharging)
+        if (!isMyPlayer && !isCharging)
         {
             TurnPlayerBasedOnMovement();
         }
@@ -81,10 +97,11 @@ public class PlayerAnimator : MonoBehaviour
         bool right = inputs[3];
 
         if (up) TurnPlayerUpwards();
-        if (down) TurnPlayerDownwards();
+        else if (down) TurnPlayerDownwards();
+        else TurnPlayerDownwards();
 
         if (right) TurnPlayerRight();
-        if (left) TurnPlayerLeft();
+        else if (left) TurnPlayerLeft();
     }
 
     public void TurnPlayerLeft()
@@ -126,7 +143,12 @@ public class PlayerAnimator : MonoBehaviour
 
         if (type == MeleeAttackTypes.Up) chargingUp = true;
 
-        if (type == MeleeAttackTypes.Down) chargingDown = true;
+        if (type == MeleeAttackTypes.Down)
+        {
+            chargingDown = true;
+            if (up) armRightObject.GetComponent<SpriteRenderer>().sortingOrder = 0;
+            else armRightObject.GetComponent<SpriteRenderer>().sortingOrder = 3;
+        }
 
         if (type == MeleeAttackTypes.Left)
         {
@@ -135,14 +157,18 @@ public class PlayerAnimator : MonoBehaviour
                 if (right)
                 {
                     chargingRight = true;
-                    armRightObject.GetComponent<SpriteRenderer>().sortingOrder  = 3;
+                    armRightObject.GetComponent<SpriteRenderer>().sortingOrder  = 0;
                 }
                 else chargingLeft = true;
             } 
             else
             {
                 if (right) chargingLeft = true;
-                else chargingRight = true;
+                else 
+                {
+                    armRightObject.GetComponent<SpriteRenderer>().sortingOrder = 3;
+                    chargingRight = true; 
+                }
             }
         }
 
@@ -154,12 +180,16 @@ public class PlayerAnimator : MonoBehaviour
                 else
                 {
                     chargingRight = true;
-                    armRightObject.GetComponent<SpriteRenderer>().sortingOrder = 3;
+                    armRightObject.GetComponent<SpriteRenderer>().sortingOrder = 0;
                 }
             }
             else
             {
-                if (right) chargingRight = true;
+                if (right)
+                {
+                    armRightObject.GetComponent<SpriteRenderer>().sortingOrder = 3;
+                    chargingRight = true;
+                }
                 else chargingLeft = true;
             }
         }
@@ -167,13 +197,40 @@ public class PlayerAnimator : MonoBehaviour
         isCharging = true;
     }
 
-    public void StopMeleeCharge()
+    public void ExecuteMeleeAttack(MeleeAttackTypes type, Vector2 direction)
     {
         chargingLeft = false;
         chargingRight = false;
         chargingUp = false;
         chargingDown = false;
         isCharging = false;
+        TurnPlayerDownwards();
+
+        hit.transform.right = direction;
+
+        if (type == MeleeAttackTypes.Left)
+        {
+            slashObject.transform.localScale = new Vector3(ATTACK_SPRITE_SCALE, ATTACK_SPRITE_SCALE, 1);
+            Vector3 currentAngle = slashObject.transform.localEulerAngles;
+            slashObject.transform.localEulerAngles = new Vector3(currentAngle.x, currentAngle.y, -45);
+            slashAnimator.SetTrigger("Execute");
+        } 
+        else if (type == MeleeAttackTypes.Right)
+        {
+            slashObject.transform.localScale = new Vector3(ATTACK_SPRITE_SCALE, -ATTACK_SPRITE_SCALE, 1);
+            Vector3 currentAngle = slashObject.transform.localEulerAngles;
+            slashObject.transform.localEulerAngles = new Vector3(currentAngle.x, currentAngle.y, 45);
+            slashAnimator.SetTrigger("Execute");
+        } 
+        else if (type == MeleeAttackTypes.Down)
+        {
+            stabAnimator.SetTrigger("Execute");
+        }
+        else if (type == MeleeAttackTypes.Up)
+        {
+            crushObject.transform.eulerAngles = new Vector3(0, 0, 0);
+            crushAnimator.SetTrigger("Execute");
+        }
     }
 
     public bool isDirectionUp(Vector2 direction)
