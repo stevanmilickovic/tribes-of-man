@@ -100,8 +100,6 @@ public static class MessageExtentions
         message.Add(player.id);
         message.Add(player.name);
         message.Add(new Vector2(player.gameObject.transform.position.x, player.gameObject.transform.position.y));
-        message.Add(player.health);
-        message.Add(player.hunger);
         AddEquipment(message, player.clothes);
         AddEquipment(message, player.tools);
 

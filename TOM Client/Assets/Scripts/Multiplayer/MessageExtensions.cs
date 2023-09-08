@@ -15,7 +15,7 @@ public static class MessageExtensions
             int itemId = message.GetInt();
             if(itemId != -1)
             {
-                slots[i] = new ItemObject(ItemManager.Singleton.items[itemId], message.GetInt());
+                slots[i] = new ItemObject(ItemService.items[itemId], message.GetInt());
             }
         }
 
@@ -32,7 +32,7 @@ public static class MessageExtensions
             int itemId = message.GetInt();
             if (itemId != -1)
             {
-                slots[i] = new ItemObject(ItemManager.Singleton.items[itemId], message.GetInt());
+                slots[i] = new ItemObject(ItemService.items[itemId], message.GetInt());
             }
         }
 
@@ -49,7 +49,7 @@ public static class MessageExtensions
             int itemId = message.GetInt();
             if (itemId != -1)
             {
-                slots[i] = new ItemObject(ItemManager.Singleton.items[itemId], message.GetInt());
+                slots[i] = new ItemObject(ItemService.items[itemId], message.GetInt());
             }
         }
 
@@ -87,7 +87,7 @@ public static class MessageExtensions
         if (id == -1)
             return null;
 
-        return new ItemObject(ItemManager.Singleton.items[id], message.GetInt());
+        return new ItemObject(ItemService.items[id], message.GetInt());
     }
 
     public static StructureObject GetStructureObject(Message message)
@@ -96,7 +96,7 @@ public static class MessageExtensions
         if (id == -1)
             return null;
 
-        return new StructureObject(StructureManager.Singleton.structures[id], message.GetBool(), message.GetInt(), message.GetInt());
+        return new StructureObject(StructureService.structures[id], message.GetBool(), message.GetInt(), message.GetInt());
     }
 
 }
