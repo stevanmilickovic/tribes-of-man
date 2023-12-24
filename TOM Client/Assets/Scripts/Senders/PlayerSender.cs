@@ -6,13 +6,12 @@ using RiptideNetworking;
 public static class PlayerSender
 {
     
-    public static void SendAttackMessage(MeleeAttackTypes attackType, Vector2 direction)
+    public static void SendAttackMessage(Vector2 direction)
     {
         ushort tick = NetworkManager.Singleton.ServerTick;
 
-        Message message = Message.Create(MessageSendMode.unreliable, ClientToServerId.attack);
+        Message message = Message.Create(MessageSendMode.unreliable, ClientToServerId.meleeAttack);
         message.Add(direction);
-        message.Add((int)attackType);
         message.Add(tick);
         NetworkManager.Singleton.Client.Send(message);
     }

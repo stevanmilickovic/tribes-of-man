@@ -11,7 +11,7 @@ public enum ClientToServerId : ushort
     craft,
     moveItems,
     drop,
-    attack,
+    meleeAttack,
     build,
     eat
 }

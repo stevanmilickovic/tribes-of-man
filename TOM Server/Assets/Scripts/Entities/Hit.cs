@@ -14,13 +14,15 @@ public class Hit : MonoBehaviour
 
     private PolygonCollider2D GetAttackCollider(MeleeAttackTypes type)
     {
+        return slashCollider;
+        /*
         switch (type)
         {
             case MeleeAttackTypes.Left: return slashCollider;
             case MeleeAttackTypes.Right: return slashCollider;
             case MeleeAttackTypes.Up: return crushCollider;
             default: return stabCollider;
-        }
+        }*/
     }
 
     public void EnableAttackCollider(MeleeAttackTypes type)

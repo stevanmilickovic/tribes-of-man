@@ -12,7 +12,8 @@ public class MyPlayer : Player
     public Chunk currentChunk;
     public Vector2 targetCorrectedPosition;
     public static float TICK_TIME = 0.03125f;
-    public static float PLAYER_SPEED = 3f;
+    public static float PLAYER_SPEED = 5f;
+    private Vector2 targetPosition;
 
     public MyPlayer(int _id, string _username) : base(_id, _username) { }
 
@@ -20,25 +21,40 @@ public class MyPlayer : Player
     {
         inputs = new bool[4];
         states = new State[BUFFER_SIZE];
+        targetPosition = transform.position;
     }
 
     private void Update()
     {
         GetInputs();
         UpdateChunk();
+
+        //if (!PlayerController.Singleton.isChargingAttack) gameObject.transform.Translate(GetInputDirection(inputs) * Time.deltaTime * PLAYER_SPEED);
+        float distanceToTarget = Vector2.Distance(transform.position, targetPosition);
+        float speedToTarget = distanceToTarget / TICK_TIME;
+
+        // Move the player towards the target position at the calculated speed
+        transform.position = Vector3.MoveTowards(transform.position, targetPosition, speedToTarget * Time.deltaTime);
     }
 
     private void FixedUpdate()
     {
-        gameObject.transform.Translate(GetInputDirection(inputs) * Time.deltaTime * 3);
+        //if(!PlayerController.Singleton.isChargingAttack) gameObject.transform.Translate(GetInputDirection(inputs) * Time.fixedDeltaTime * PLAYER_SPEED);
+        
+        if (!PlayerController.Singleton.isChargingAttack)
+        {
+            Vector2 movement = GetInputDirection(inputs) * Time.fixedDeltaTime * PLAYER_SPEED;
+            targetPosition += new Vector2(movement.x, movement.y);
+            states[NetworkManager.Singleton.ServerTick % BUFFER_SIZE] = new State(NetworkManager.Singleton.ServerTick, targetPosition, inputs);
+        }
+        //states[NetworkManager.Singleton.ServerTick % BUFFER_SIZE] = new State(NetworkManager.Singleton.ServerTick, gameObject.transform.position, inputs);
         RefreshInputs();
-        states[NetworkManager.Singleton.ServerTick % BUFFER_SIZE] = new State(NetworkManager.Singleton.ServerTick, gameObject.transform.position, inputs);
     }
 
     public void Reconciliate(ushort serverTick, Vector2 serverPosition)
     {
         if (serverTick > NetworkManager.Singleton.ServerTick)
-            states[serverTick % BUFFER_SIZE] = new State(serverTick, gameObject.transform.position, inputs);
+            states[serverTick % BUFFER_SIZE] = new State(serverTick, targetPosition, inputs);
 
         if (states[serverTick % BUFFER_SIZE] == null)
             return;
@@ -47,19 +63,23 @@ public class MyPlayer : Player
 
         if (positionError > 0.02f)
         {
+
+            Debug.Log($"Our position: {states[serverTick % BUFFER_SIZE].position}, server position {serverPosition}");
+
             states[serverTick % BUFFER_SIZE].position = serverPosition;
             targetCorrectedPosition = serverPosition;
 
             ushort tickToProcess = serverTick++;
 
-            while (tickToProcess < NetworkManager.Singleton.ServerTick)
+            while (tickToProcess <= NetworkManager.Singleton.ServerTick)
             {
                 State currentState = states[tickToProcess % BUFFER_SIZE];
                 currentState.position = RecalculatePosition(currentState.inputs);
                 tickToProcess++;
             }
 
-            transform.position = targetCorrectedPosition;
+            targetPosition = targetCorrectedPosition;
+            //transform.position = targetCorrectedPosition;
         }
     }
 
@@ -108,6 +128,12 @@ public class MyPlayer : Player
             inputDirection.y -= 1;
         if (inputs[3])
             inputDirection.x += 1;
+
+        if (inputDirection.magnitude > 0)
+        {
+            inputDirection = inputDirection.normalized;
+        }
+
         return inputDirection;
     }
 

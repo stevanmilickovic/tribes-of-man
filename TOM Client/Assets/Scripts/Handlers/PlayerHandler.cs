@@ -44,8 +44,9 @@ public static class PlayerHandler
         int fromPlayerId = message.GetInt();
         MeleeAttackTypes type = (MeleeAttackTypes)message.GetInt();
         Vector2 direction = message.GetVector2();
+        ushort tick = message.GetUShort();
 
-        PlayerManager.Singleton.ChargePlayerAttack(fromPlayerId, type, direction);
+        PlayerManager.Singleton.ChargePlayerMeleeAttack(fromPlayerId, type, direction, tick);
     }
 
     [MessageHandler((ushort)ServerToClientId.executingMeleeAttack)]
@@ -54,6 +55,7 @@ public static class PlayerHandler
         int fromPlayerId = message.GetInt();
         MeleeAttackTypes type = (MeleeAttackTypes)message.GetInt();
         Vector2 direction = message.GetVector2();
+        ushort tick = message.GetUShort();
 
         PlayerManager.Singleton.ExecutePlayerAttack(fromPlayerId, type, direction);
     }

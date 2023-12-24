@@ -11,7 +11,7 @@ public static class ItemService
     {
         AddToolItem(0, "stick", false, 5);
         AddItem(1, Item.Type.Resource, "wood", true);
-        AddWeaponItem(2, "sword", false, 10);
+        AddWeaponItem(2, "sword", false, 10, MeleeAttackTypes.Sword, 2f);
         AddFoodItem(3, "berries");
     }
 
@@ -22,9 +22,9 @@ public static class ItemService
         itemsByName.Add(name, newItem);
     }
 
-    private static void AddWeaponItem(int id, string name, bool isStackable, int damage)
+    private static void AddWeaponItem(int id, string name, bool isStackable, int damage, MeleeAttackTypes meleeAttackType, float dash)
     {
-        WeaponItem newItem = new WeaponItem(id, name, isStackable, damage);
+        WeaponItem newItem = new WeaponItem(id, name, isStackable, damage, meleeAttackType, dash);
         items.Add(id, newItem);
         itemsByName.Add(name, newItem);
     }

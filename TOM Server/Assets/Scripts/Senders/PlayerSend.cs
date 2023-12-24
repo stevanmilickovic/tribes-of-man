@@ -105,21 +105,23 @@ public static class PlayerSend
         }
     }
 
-    public static void SendChargingMeleeAttackMessage(MeleeAttackTypes type, Vector2 direction, int fromPlayerId, ushort clientId)
+    public static void SendChargingMeleeAttackMessage(MeleeAttackTypes type, Vector2 direction, int fromPlayerId, ushort clientId, ushort tick)
     {
         Message message = Message.Create(MessageSendMode.unreliable, ServerToClientId.chargingMeleeAttack);
         message.AddInt(fromPlayerId);
         message.AddInt((int)type);
         message.AddVector2(direction);
+        message.AddUShort(tick);
         NetworkManager.Singleton.Server.Send(message, clientId);
     }
 
-    public static void SendExecutingMeleeAttackMessage(MeleeAttackTypes type, Vector2 direction, int fromPlayerId, ushort clientId)
+    public static void SendExecutingMeleeAttackMessage(MeleeAttackTypes type, Vector2 direction, int fromPlayerId, ushort clientId, ushort tick)
     {
         Message message = Message.Create(MessageSendMode.unreliable, ServerToClientId.executingMeleeAttack);
         message.AddInt(fromPlayerId);
         message.AddInt((int)type);
         message.AddVector2(direction);
+        message.AddUShort(tick);
         NetworkManager.Singleton.Server.Send(message, clientId);
     }
 }

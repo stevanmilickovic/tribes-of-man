@@ -29,6 +29,10 @@ public class Player : MonoBehaviour
     public GameObject rightArm;
     public EquipmentType equipmentType;
 
+    public bool isChargingAttack = false;
+    public static int CHARGE_TIME_IN_TICKS = 16;
+    public Attack attack;
+
     public Player(int _id, string _username)
     {
         id = _id;
@@ -39,6 +43,15 @@ public class Player : MonoBehaviour
         }
         catch (Exception) { }
         equipmentType = EquipmentType.Unarmed;
+    }
+
+    private void FixedUpdate()
+    {
+        if (isChargingAttack)
+        {
+            attack.remainingTicks--;
+            if (attack.remainingTicks == 0) ExecuteMeleeAttack();
+        }
     }
 
     public void FillPlayerData(PlayerPacket packet)
@@ -97,6 +110,45 @@ public class Player : MonoBehaviour
         }
     }
 
+    public void StartMeleeAttack(MeleeAttackTypes type, Vector2 direction, ushort tick)
+    {
+        ItemObject weaponObject = tools.GetMainWeapon();
+        WeaponItem weapon = (WeaponItem)weaponObject.item;
 
+        attack = new Attack(true, false, type, direction, CHARGE_TIME_IN_TICKS, weapon.dash);
+        isChargingAttack = true;
+    }
 
+    public void ExecuteMeleeAttack()
+    {
+        Dash();
+        PlayerAnimator playerAnimator = gameObject.GetComponent<PlayerAnimator>();
+        playerAnimator.ExecuteMeleeAttack(attack.meleeType, attack.direction);
+    }
+
+    private void Dash()
+    {
+        transform.position = transform.position + new Vector3(attack.direction.x, attack.direction.y, 0) * attack.dash;
+    }
+}
+
+public struct Attack
+{
+
+    public Attack(bool isMelee, bool isRanged, MeleeAttackTypes meleeType, Vector2 direction, int remainingTicks, float dash)
+    {
+        this.isMelee = isMelee;
+        this.isRanged = isRanged;
+        this.meleeType = meleeType;
+        this.direction = direction;
+        this.remainingTicks = remainingTicks;
+        this.dash = dash;
+    }
+
+    public bool isMelee;
+    public bool isRanged;
+    public MeleeAttackTypes meleeType;
+    public Vector2 direction;
+    public int remainingTicks;
+    public float dash;
 }

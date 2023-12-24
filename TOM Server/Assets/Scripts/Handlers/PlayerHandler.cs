@@ -21,9 +21,8 @@ public static class PlayerHandler
     public static void PlayerMeleeAttack(ushort fromClientId, Message message)
     {
         Vector2 direction = message.GetVector2();
-        MeleeAttackTypes attackType = (MeleeAttackTypes)message.GetInt();
         ushort tick = message.GetUShort();
-        PlayerManager.Singleton.HandlePlayerMeleeAttack(fromClientId, direction, attackType, tick);
+        PlayerManager.Singleton.HandlePlayerMeleeAttack(fromClientId, direction, tick);
     }
 
 }

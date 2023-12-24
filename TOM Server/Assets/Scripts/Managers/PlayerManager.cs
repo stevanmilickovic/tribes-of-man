@@ -27,6 +27,8 @@ public class PlayerManager : MonoBehaviour
     public Dictionary<ushort, Player> playersByClientId;
     [SerializeField] private GameObject playerPrefab;
 
+    public static float PLAYER_SPEED = 5f;
+
     private void Awake()
     {
         Singleton = this;
@@ -109,7 +111,8 @@ public class PlayerManager : MonoBehaviour
     public void HandlePlayerInput(ushort fromClient, bool[] inputs)
     {
         Player player = playersByClientId[fromClient];
-        player.gameObject.transform.Translate(GetInputDirection(inputs) * Time.deltaTime * 3);
+        if (player.isChargingAttack) return;
+        player.gameObject.transform.Translate(GetInputDirection(inputs) * Time.fixedDeltaTime * PLAYER_SPEED);
     }
 
     private Vector2 GetInputDirection(bool[] inputs)
@@ -123,12 +126,18 @@ public class PlayerManager : MonoBehaviour
             inputDirection.y -= 1;
         if (inputs[3])
             inputDirection.x += 1;
+
+        if (inputDirection.magnitude > 0)
+        {
+            inputDirection = inputDirection.normalized;
+        }
+
         return inputDirection;
     }
 
-    public void HandlePlayerMeleeAttack(ushort clientId, Vector2 direction, MeleeAttackTypes type, ushort tick)
+    public void HandlePlayerMeleeAttack(ushort clientId, Vector2 direction, ushort tick)
     {
         Player player = playersByClientId[clientId];
-        player.ChargeMeleeAttack(type, direction, tick);
+        player.ChargeMeleeAttack(direction, tick);
     }
 }

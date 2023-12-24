@@ -29,7 +29,7 @@ public class Player : MonoBehaviour
     public Dictionary<ushort, Vector2> positionsInTime;
 
     public bool isChargingAttack = false;
-    public static int CHARGE_TIME_IN_TICKS = 32;
+    public static int CHARGE_TIME_IN_TICKS = 16;
     public Attack attack;
 
     public static Random random = new Random();
@@ -55,7 +55,7 @@ public class Player : MonoBehaviour
         if (isChargingAttack)
         {
             attack.remainingTicks--;
-            if (attack.remainingTicks == 0) ExecuteMeleeAttack();
+            if (attack.remainingTicks == 0) ExecuteMeleeAttack(NetworkManager.Singleton.CurrentTick);
         }
     }
 
@@ -78,41 +78,41 @@ public class Player : MonoBehaviour
         UpdateChunk();
     }
 
-    public void ChargeMeleeAttack(MeleeAttackTypes type, Vector2 direction, ushort tick)
+    public void ChargeMeleeAttack(Vector2 direction, ushort tick)
     {
-        if (isChargingAttack) return;
+        if (isChargingAttack || equipmentType != EquipmentType.Armed) return;
+
+        ItemObject weaponObject = tools.GetMainWeapon();
+        WeaponItem weapon = (WeaponItem)weaponObject.item;
+        MeleeAttackTypes type = weapon.meleeAttackType;
+
+        pivot.transform.right = direction;
+        isChargingAttack = true;
+        attack = new Attack(true, false, type, direction, CHARGE_TIME_IN_TICKS, weapon.dash);
 
         hit.gameObject.SetActive(true);
-        pivot.transform.right = direction;
-        hit.EnableAttackCollider(type);
-        isChargingAttack = true;
-        attack = new Attack(true, false, type, direction, CHARGE_TIME_IN_TICKS);
+        hit.EnableAttackCollider(type); //Here we choose the attack collider type based on the weapon used
 
         foreach (Player player in currentChunk.playersInRange)
         {
-            PlayerSend.SendChargingMeleeAttackMessage(type, direction, id, player.currentClientId);
+            PlayerSend.SendChargingMeleeAttackMessage(type, direction, id, player.currentClientId, tick);
         }
     }
 
-    public void ExecuteMeleeAttack()
+    public void ExecuteMeleeAttack(ushort tick)
     {
-
-        if (equipmentType == EquipmentType.Armed)
-        {
-            AttackObjects();
-        }
-        if (equipmentType == EquipmentType.HoldingTool)
-        {
-            BuildStructures();
-        }
+        Dash();
+        AttackObjects();
 
         hit.DisableAttackCollider(attack.meleeType);
         isChargingAttack = false;
 
-        foreach (Player player in currentChunk.playersInRange)
-        {
-            PlayerSend.SendExecutingMeleeAttackMessage(attack.meleeType, attack.direction, id, player.currentClientId);
-        }
+        PlayerSend.SendExecutingMeleeAttackMessage(attack.meleeType, attack.direction, id, currentClientId, tick);
+    }
+
+    private void Dash()
+    {
+        transform.position = transform.position + new Vector3(attack.direction.x, attack.direction.y, 0) * attack.dash;
     }
 
     private void AttackObjects()
@@ -225,13 +225,14 @@ public class Player : MonoBehaviour
 
 public struct Attack {
 
-    public Attack(bool isMelee, bool isRanged, MeleeAttackTypes meleeType, Vector2 direction, int remainingTicks)
+    public Attack(bool isMelee, bool isRanged, MeleeAttackTypes meleeType, Vector2 direction, int remainingTicks, float dash)
     {
         this.isMelee = isMelee;
         this.isRanged = isRanged;
         this.meleeType = meleeType;
         this.direction = direction;
         this.remainingTicks = remainingTicks;
+        this.dash = dash;
     }
 
     public bool isMelee;
@@ -239,4 +240,5 @@ public struct Attack {
     public MeleeAttackTypes meleeType;
     public Vector2 direction;
     public int remainingTicks;
+    public float dash;
 }

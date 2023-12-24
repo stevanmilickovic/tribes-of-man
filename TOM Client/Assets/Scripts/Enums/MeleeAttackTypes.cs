@@ -6,8 +6,8 @@ using System.Threading.Tasks;
 
 public enum MeleeAttackTypes
 {
-    Left = 1,
-    Right = 2,
-    Up = 3,
-    Down = 4
+    Spear = 1,
+    Sword,
+    Axe,
+    Mace
 }

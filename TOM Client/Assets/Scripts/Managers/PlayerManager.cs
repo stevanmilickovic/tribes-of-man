@@ -65,8 +65,9 @@ public class PlayerManager : MonoBehaviour
         {
             if (!cinematicMode)
             {
-                mainCamera.transform.SetParent(newPlayer.transform);
+                //mainCamera.transform.SetParent(newPlayer.transform);
                 mainCamera.transform.position = newPlayer.transform.position;
+                mainCamera.transform.GetComponent<CameraFollow>().playerTransform = newPlayer.transform;
             }
             newPlayer.GetComponentInChildren<Transform>().position = newPlayer.transform.position; //Possible difficulties with children position
 
@@ -133,12 +134,15 @@ public class PlayerManager : MonoBehaviour
         }
     }
 
-    public void ChargePlayerAttack(int id, MeleeAttackTypes type, Vector2 direction)
+    public void ChargePlayerMeleeAttack(int id, MeleeAttackTypes type, Vector2 direction, ushort tick)
     {
         Player player = players[id];
         PlayerAnimator playerAnimator = player.gameObject.GetComponent<PlayerAnimator>();
 
-        if (myId != id) playerAnimator.MeleeCharge(type, direction);
+        if (myId != id)
+        {
+            playerAnimator.MeleeCharge(type, direction);
+        }
     }
 
     public void ExecutePlayerAttack(int id, MeleeAttackTypes type, Vector2 direction)
@@ -149,7 +153,7 @@ public class PlayerManager : MonoBehaviour
 
         playerAnimator.ExecuteMeleeAttack(type, direction);
 
-        if (myId == id) PlayerController.Singleton.isChargingAttack = false;
+        PlayerController.Singleton.isChargingAttack = false;
     }
 
     

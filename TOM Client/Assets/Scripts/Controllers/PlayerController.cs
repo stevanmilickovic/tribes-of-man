@@ -31,6 +31,7 @@ public class PlayerController : MonoBehaviour
     public PlayerAnimator playerAnimator;
     public bool isChargingAttack = false;
     Vector2 hitDirection;
+    public bool isMoving = false;
 
     private void Awake()
     {
@@ -39,11 +40,12 @@ public class PlayerController : MonoBehaviour
 
     private void FixedUpdate()
     {
-        if (HasInput())
+        if (HasInput() && !isChargingAttack)
         {
             PlayerSender.SendInputs(inputs);
         }
         RefreshInputs();
+        HandleInputs();
     }
 
     private void Update()
@@ -62,7 +64,7 @@ public class PlayerController : MonoBehaviour
 
     private void GetMouseInputs()
     {
-        if (!EventSystem.current.IsPointerOverGameObject()) 
+        if (!EventSystem.current.IsPointerOverGameObject())
         {
             if (Input.GetKeyDown(KeyCode.Mouse1))
                 Pickup();
@@ -71,22 +73,7 @@ public class PlayerController : MonoBehaviour
             {
                 if (Input.GetKeyDown(KeyCode.Mouse0))
                 {
-                    Attack(MeleeAttackTypes.Left);
-                }
-
-                if (Input.GetKeyDown(KeyCode.Mouse1))
-                {
-                    Attack(MeleeAttackTypes.Right);
-                }
-
-                if (Input.GetAxisRaw("Mouse ScrollWheel") > 0)
-                {
-                    Attack(MeleeAttackTypes.Up);
-                }
-
-                if (Input.GetAxisRaw("Mouse ScrollWheel") < 0)
-                {
-                    Attack(MeleeAttackTypes.Down);
+                    Attack();
                 }
             }
         }
@@ -94,7 +81,7 @@ public class PlayerController : MonoBehaviour
 
     public void ExecutedAttack()
     {
-        
+
         isChargingAttack = false;
     }
 
@@ -107,13 +94,13 @@ public class PlayerController : MonoBehaviour
         //hit.transform.right = direction;
     }
 
-    private void Attack(MeleeAttackTypes attackType)
+    private void Attack()
     {
-        if (hit == null) return;
+        if (hit == null || !(PlayerManager.Singleton.myPlayer.equipmentType == Player.EquipmentType.Armed)) return;
         isChargingAttack = true;
         Vector2 direction = hitDirection;
-        playerAnimator.MeleeCharge(attackType, direction);
-        PlayerSender.SendAttackMessage(attackType, direction);
+        playerAnimator.MeleeCharge(MeleeAttackTypes.Spear, direction);
+        PlayerSender.SendAttackMessage(direction);
     }
 
     public void Pickup()
