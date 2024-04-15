@@ -108,7 +108,7 @@ public class PlayerController : MonoBehaviour
         Vector3 mousePosition = mainCamera.ScreenToWorldPoint(Input.mousePosition);
         int x = (int)mousePosition.x;
         int y = (int)mousePosition.y;
-        if (MapManager.Singleton.tiles[(x, y)].itemObject != null)
+        if (MapManager.Singleton.map.tiles[(x, y)].itemObject != null)
         {
             InventorySender.SendPickupMessage(x, y);
         }

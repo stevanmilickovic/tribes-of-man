@@ -27,6 +27,7 @@ public class PlayerManager : MonoBehaviour
 
     [SerializeField] private GameObject playerPrefab;
     [SerializeField] private GameObject myPlayerPrefab;
+    public GameObject projectilePrefab;
     [SerializeField] private Interpolator interpolator;
     public MyPlayer myPlayer;
     public Dictionary<int, Player> players;
@@ -74,6 +75,8 @@ public class PlayerManager : MonoBehaviour
             PlayerController.Singleton.hit = newPlayer.transform.GetChild(2).gameObject;
             PlayerController.Singleton.playerAnimator = newPlayer.gameObject.GetComponent<PlayerAnimator>();
             PlayerController.Singleton.playerAnimator.isMyPlayer = true;
+
+            MapManager.Singleton.CreateAllVisibleChunks();
         }
 
         return newPlayerScript;
@@ -134,24 +137,53 @@ public class PlayerManager : MonoBehaviour
         }
     }
 
-    public void ChargePlayerMeleeAttack(int id, MeleeAttackTypes type, Vector2 direction, ushort tick)
+    public void ChargePlayerAttack(int id, Vector2 direction, ushort tick)
     {
         Player player = players[id];
         PlayerAnimator playerAnimator = player.gameObject.GetComponent<PlayerAnimator>();
 
         if (myId != id)
         {
-            playerAnimator.MeleeCharge(type, direction);
+            Item weapon = player.tools.GetMainWeapon().item;
+            if (weapon is MeleeWeaponItem)
+            {
+                playerAnimator.MeleeCharge(((MeleeWeaponItem)weapon).meleeAttackType, direction);
+            }
+            else if (weapon is RangedWeaponItem)
+            {
+                //do something else or nothing tbh
+            }
+            
         }
     }
 
-    public void ExecutePlayerAttack(int id, MeleeAttackTypes type, Vector2 direction)
+    public void ExecutePlayerAttack(int id, Vector2 direction)
     {
 
         Player player = players[id];
         PlayerAnimator playerAnimator = player.gameObject.GetComponent<PlayerAnimator>();
 
-        playerAnimator.ExecuteMeleeAttack(type, direction);
+        Item item = player.tools.GetMainWeapon().item;
+
+        if (item is MeleeWeaponItem)
+        {
+            MeleeWeaponItem meleeItem = (MeleeWeaponItem)item;
+            MeleeAttackTypes type = meleeItem.meleeAttackType;
+
+            playerAnimator.ExecuteMeleeAttack(type, direction);
+        }
+        else if (item is RangedWeaponItem)
+        {
+            Debug.Log("we've executed a ranged attack");
+            RangedWeaponItem rangedItem = (RangedWeaponItem)item;
+            GameObject projectile = Instantiate(projectilePrefab);
+            projectile.transform.position = player.transform.position;
+            projectile.transform.right = direction;
+            Projectile projectileScript = projectile.GetComponent<Projectile>();
+            projectileScript.ConfigureProjectile(10, rangedItem.damage, rangedItem.projectileSprite, player.gameObject);
+
+            playerAnimator.ExecuteRangedAttack();
+        }
 
         PlayerController.Singleton.isChargingAttack = false;
     }

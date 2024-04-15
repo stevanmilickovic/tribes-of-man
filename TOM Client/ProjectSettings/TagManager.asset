@@ -42,3 +42,18 @@ TagManager:
   - name: Default
     uniqueID: 0
     locked: 0
+  - name: Structures
+    uniqueID: 2080725313
+    locked: 0
+  - name: Items
+    uniqueID: 1220619641
+    locked: 0
+  - name: Players
+    uniqueID: 2841709849
+    locked: 0
+  - name: My Player
+    uniqueID: 1246246961
+    locked: 0
+  - name: Attacks
+    uniqueID: 465849579
+    locked: 0

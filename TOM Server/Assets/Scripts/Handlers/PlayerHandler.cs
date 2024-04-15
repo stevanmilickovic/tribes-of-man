@@ -17,12 +17,12 @@ public static class PlayerHandler
         PlayerManager.Singleton.HandlePlayerInput(fromClientId, inputs);
     }
 
-    [MessageHandler((ushort)ClientToServerId.meleeAttack)]
+    [MessageHandler((ushort)ClientToServerId.attack)]
     public static void PlayerMeleeAttack(ushort fromClientId, Message message)
     {
         Vector2 direction = message.GetVector2();
         ushort tick = message.GetUShort();
-        PlayerManager.Singleton.HandlePlayerMeleeAttack(fromClientId, direction, tick);
+        PlayerManager.Singleton.HandlePlayerAttack(fromClientId, direction, tick);
     }
 
 }

@@ -33,6 +33,7 @@ public class Inventory
         slots[2] = new ItemObject(ItemService.items[1], 2);
         slots[3] = new ItemObject(ItemService.items[2], 1);
         slots[4] = new ItemObject(ItemService.items[3], 2);
+        slots[5] = new ItemObject(ItemService.items[4], 1);
     }
 
     public bool Add(ItemObject itemObject)

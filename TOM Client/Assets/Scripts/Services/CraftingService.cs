@@ -25,7 +25,7 @@ public static class CraftingService
     {
         int slot = InventoryUtil.GetSlotNumber(absoluteSlot);
         ItemObject item = inventory.slots[slot];
-        Tile tile = MapManager.Singleton.tiles[(tileX, tileY)];
+        Tile tile = MapManager.Singleton.map.tiles[(tileX, tileY)];
 
         if (tile.itemObject != null && item != null && GetRecipe(item, tile.itemObject) != null)
         {

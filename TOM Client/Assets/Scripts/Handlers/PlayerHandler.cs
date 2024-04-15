@@ -8,6 +8,7 @@ public static class PlayerHandler
     [MessageHandler((ushort)ServerToClientId.spawnPlayer)]
     public static void SpawnPlayer(Message message)
     {
+        Debug.Log("Received spawn player");
         int id = message.GetInt();
         string username = message.GetString();
         Vector2 position = message.GetVector2();
@@ -38,26 +39,24 @@ public static class PlayerHandler
         PlayerManager.Singleton.UpdatePlayerPosition(id, tick, position);
     }
 
-    [MessageHandler((ushort)ServerToClientId.chargingMeleeAttack)]
-    public static void PlayerChargingMeleeAttack(Message message)
+    [MessageHandler((ushort)ServerToClientId.chargingAttack)]
+    public static void PlayerChargingAttack(Message message)
     {
         int fromPlayerId = message.GetInt();
-        MeleeAttackTypes type = (MeleeAttackTypes)message.GetInt();
         Vector2 direction = message.GetVector2();
         ushort tick = message.GetUShort();
 
-        PlayerManager.Singleton.ChargePlayerMeleeAttack(fromPlayerId, type, direction, tick);
+        PlayerManager.Singleton.ChargePlayerAttack(fromPlayerId, direction, tick);
     }
 
-    [MessageHandler((ushort)ServerToClientId.executingMeleeAttack)]
-    public static void PlayerExecutingMeleeAttack(Message message)
+    [MessageHandler((ushort)ServerToClientId.executingAttack)]
+    public static void PlayerExecutingAttack(Message message)
     {
         int fromPlayerId = message.GetInt();
-        MeleeAttackTypes type = (MeleeAttackTypes)message.GetInt();
         Vector2 direction = message.GetVector2();
         ushort tick = message.GetUShort();
 
-        PlayerManager.Singleton.ExecutePlayerAttack(fromPlayerId, type, direction);
+        PlayerManager.Singleton.ExecutePlayerAttack(fromPlayerId, direction);
     }
 
 }

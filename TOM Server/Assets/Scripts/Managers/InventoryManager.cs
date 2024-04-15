@@ -20,7 +20,7 @@ public static class InventoryManager
                 tile.itemObject = null;
         }
         PlayerSend.SendInventoryMessage(PlayerManager.Singleton.playersByClientId[clientId], clientId, 0);
-        MapSend.SendTileMessage(tile);
+        MapSend.SendTileMessageToPlayersInRange(tile);
     }
 
     public static void MoveItems(ushort fromClientId, ushort tick, int slot1, int amount, int slot2)
@@ -104,7 +104,7 @@ public static class InventoryManager
         if (tile != null)
         {
             inventory.ReduceSlotAmountByNumber(relativeSlotNumber, amount);
-            MapSend.SendTileMessage(tile);
+            MapSend.SendTileMessageToPlayersInRange(tile);
         }
         PlayerSend.SendInventoryMessage(player, clientId, tick);
     }
@@ -132,7 +132,7 @@ public static class InventoryManager
         if (!MapUtil.IsWithinRange(tileX, tileY, PlayerManager.Singleton.playersByClientId[clientId].transform.position))
         {
             PlayerSend.SendInventoryMessage(PlayerManager.Singleton.playersByClientId[clientId], clientId, tick);
-            MapSend.SendTileMessage(MapUtil.GetTile(tileX, tileY));
+            MapSend.SendTileMessageToPlayersInRange(MapUtil.GetTile(tileX, tileY));
             return;
         }
 

@@ -1324,7 +1324,7 @@ Camera:
     y: 0
     width: 1
     height: 1
-  near clip plane: 0.3
+  near clip plane: 0
   far clip plane: 1000
   field of view: 60
   orthographic: 1
@@ -1427,8 +1427,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ca724f3184fd0594d9ce36970b00e8fa, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  playerPrefab: {fileID: 3222424180441005287, guid: 9d60a66267857da42857f504d45d1e7e, type: 3}
+  playerPrefab: {fileID: 5948554476220782496, guid: 9f40190f60fddd54ba0a65af4ac1ac69, type: 3}
   myPlayerPrefab: {fileID: 3036998365851747008, guid: 0979467308c43fb49b284f9b926398e8, type: 3}
+  projectilePrefab: {fileID: 7750841436458681007, guid: 02681694245bb1a4084c60ef1234a735, type: 3}
   interpolator: {fileID: 0}
   myPlayer: {fileID: 0}
   myId: -1
@@ -2111,6 +2112,7 @@ MonoBehaviour:
   largeStructureObjectPrefab: {fileID: 559141217822250294, guid: c118fe42bc3767043937ad824327cc2a, type: 3}
   mediumStructureObjectPrefab: {fileID: 7708150632635312907, guid: d83af3e9ca626ba489145178726ab45c, type: 3}
   smallStructureObjectPrefab: {fileID: 5072701017609254776, guid: 1f05f023038f87f4f99adb6bb3f68f09, type: 3}
+  tileDetailPrefab: {fileID: 6684762800158828005, guid: 48b549c05f1650e499bf2c2defb69401, type: 3}
 --- !u!4 &1129335258
 Transform:
   m_ObjectHideFlags: 0

@@ -65,11 +65,12 @@ public class PlayerAnimator : MonoBehaviour
     private void FixedUpdate()
     {
         animator.SetFloat("Speed", CalculateSpeed());
-
+    /**
         animator.SetBool("Charging Left", chargingLeft);
         animator.SetBool("Charging Right", chargingRight);
         animator.SetBool("Charging Up", chargingUp);
         animator.SetBool("Charging Down", chargingDown);
+    */
 
         if (!isMyPlayer && !isCharging)
         {
@@ -153,6 +154,12 @@ public class PlayerAnimator : MonoBehaviour
         hit.transform.right = direction;
         attackDirectionObject.GetComponent<SpriteRenderer>().sprite = TextureUtil.GetSprite("attack-direction");
         isCharging = true;
+    }
+
+    public void ExecuteRangedAttack()
+    {
+        isCharging = false;
+        attackDirectionObject.GetComponent<SpriteRenderer>().sprite = null;
     }
 
     public void ExecuteMeleeAttack(MeleeAttackTypes type, Vector2 direction)

@@ -26,6 +26,7 @@ public class PlayerManager : MonoBehaviour
     public Dictionary<string, Player> playersByName;
     public Dictionary<ushort, Player> playersByClientId;
     [SerializeField] private GameObject playerPrefab;
+    public GameObject projectilePrefab;
 
     public static float PLAYER_SPEED = 5f;
 
@@ -44,23 +45,18 @@ public class PlayerManager : MonoBehaviour
 
     public void PlayerJoined(ushort clientId, string name)
     {
-        NetworkManager.Singleton.SendSync();
-        if (playersByName.ContainsKey(name)) 
-        {
+        NetworkSend.SendSync();
+        MapSend.SendSeed(clientId);
+
+        if (playersByName.ContainsKey(name))
             UpdatePlayerClientId(playersByName[name], clientId);
-        }
-        else 
-        { 
+        else
             SpawnNewPlayer(clientId, name);
-        }
 
         PlayerSend.SendYourIdMessage(playersByName[name], clientId);
         PlayerSend.SendSpawnPlayerMessage(playersByName[name], clientId); // This player
         PlayerSend.SendInventoryMessage(playersByName[name], clientId, 1);
-        PlayerSend.SendBasicRelevantInformation(playersByName[name], clientId);
-
-        if (name == "admin")
-            MapSend.SendAllChunks(clientId, MapManager.Singleton.map);
+        PlayerSend.SendAllObjectsInRange(playersByName[name], clientId);
     }
 
     public void PlayerLeft(ushort clientId)
@@ -96,7 +92,7 @@ public class PlayerManager : MonoBehaviour
 
         newPlayerScript.inventory.Test();
         newPlayerScript.tools.Test();
-        newPlayerScript.CheckEquipment();
+        newPlayerScript.UpdateEquipmentStatus();
         newPlayerScript.UpdateChunk();
 
         return newPlayerScript;
@@ -135,9 +131,9 @@ public class PlayerManager : MonoBehaviour
         return inputDirection;
     }
 
-    public void HandlePlayerMeleeAttack(ushort clientId, Vector2 direction, ushort tick)
+    public void HandlePlayerAttack(ushort clientId, Vector2 direction, ushort tick)
     {
         Player player = playersByClientId[clientId];
-        player.ChargeMeleeAttack(direction, tick);
+        player.ChargeAttack(direction, tick);
     }
 }

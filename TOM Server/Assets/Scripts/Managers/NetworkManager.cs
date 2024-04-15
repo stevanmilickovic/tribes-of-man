@@ -10,23 +10,22 @@ public enum ClientToServerId : ushort
     craft,
     moveItems,
     drop,
-    meleeAttack,
+    attack,
     build,
     eat
 }
-
 public enum ServerToClientId : ushort
 {
     sync = 1,
+    seed,
     spawnPlayer,
     yourPlayerId,
     playerPosition,
-    chunk,
     tile,
     playerInventory,
     playerEquipment,
-    chargingMeleeAttack,
-    executingMeleeAttack
+    chargingAttack,
+    executingAttack
 }
 
 public class NetworkManager : MonoBehaviour
@@ -75,7 +74,7 @@ public class NetworkManager : MonoBehaviour
         Server.Tick();
 
         if (CurrentTick % 160 == 0)
-            SendSync();
+            NetworkSend.SendSync();
 
         CurrentTick++;
     }
@@ -88,12 +87,5 @@ public class NetworkManager : MonoBehaviour
     private void PlayerLeft(object sender, ClientDisconnectedEventArgs e)
     {
         PlayerManager.Singleton.PlayerLeft(e.Id);
-    }
-
-    public void SendSync()
-    {
-        Message message = Message.Create(MessageSendMode.unreliable, ServerToClientId.sync);
-        message.Add(CurrentTick);
-        Server.SendToAll(message);
     }
 }

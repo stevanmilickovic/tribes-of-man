@@ -10,7 +10,7 @@ public static class PlayerSender
     {
         ushort tick = NetworkManager.Singleton.ServerTick;
 
-        Message message = Message.Create(MessageSendMode.unreliable, ClientToServerId.meleeAttack);
+        Message message = Message.Create(MessageSendMode.unreliable, ClientToServerId.attack);
         message.Add(direction);
         message.Add(tick);
         NetworkManager.Singleton.Client.Send(message);

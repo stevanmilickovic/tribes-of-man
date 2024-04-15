@@ -6,25 +6,19 @@ using RiptideNetworking;
 public static class PlayerSend
 {
 
-    public static void SendBasicRelevantInformation(Player player, ushort clientId)
+    public static void SendAllObjectsInRange(Player player, ushort clientId)
     {
-
         foreach (Chunk chunk in player.chunksInRange)
         {
-            MapSend.SendChunkMessage(clientId, chunk);
-            foreach (Player playerInChunk in chunk.players)
-            {
-                if (playerInChunk != player)
-                    SendSpawnPlayerMessage(playerInChunk, clientId);
-            }
+            MapSend.SendObjectsInChunk(chunk, clientId);
         }
     }
 
-    public static void SendRelevantPlayerPosition(Player player, ushort clientId)
+    public static void SendPositionOfPlayersInRange(Player player, ushort clientId)
     {
-        foreach (Player playerInSight in player.currentChunk.playersInRange)
+        foreach (Player playerInRange in player.currentChunk.playersInRange)
         {
-            SendPlayerPosition(playerInSight, clientId);
+            SendPlayerPosition(playerInRange, clientId);
         }
     }
 
@@ -37,7 +31,7 @@ public static class PlayerSend
         MessageExtentions.AddEquipment(message, player.clothes);
         MessageExtentions.AddEquipment(message, player.tools);
         NetworkManager.Singleton.Server.Send(message, clientId);
-        PlayerManager.Singleton.playersByClientId[clientId].CheckEquipment();
+        PlayerManager.Singleton.playersByClientId[clientId].UpdateEquipmentStatus();
     }
 
     public static void SendYourIdMessage(Player player, ushort clientId)
@@ -105,21 +99,19 @@ public static class PlayerSend
         }
     }
 
-    public static void SendChargingMeleeAttackMessage(MeleeAttackTypes type, Vector2 direction, int fromPlayerId, ushort clientId, ushort tick)
+    public static void SendChargingAttackMessage(Vector2 direction, int fromPlayerId, ushort clientId, ushort tick)
     {
-        Message message = Message.Create(MessageSendMode.unreliable, ServerToClientId.chargingMeleeAttack);
+        Message message = Message.Create(MessageSendMode.unreliable, ServerToClientId.chargingAttack);
         message.AddInt(fromPlayerId);
-        message.AddInt((int)type);
         message.AddVector2(direction);
         message.AddUShort(tick);
         NetworkManager.Singleton.Server.Send(message, clientId);
     }
 
-    public static void SendExecutingMeleeAttackMessage(MeleeAttackTypes type, Vector2 direction, int fromPlayerId, ushort clientId, ushort tick)
+    public static void SendExecutingAttackMessage(Vector2 direction, int fromPlayerId, ushort clientId, ushort tick)
     {
-        Message message = Message.Create(MessageSendMode.unreliable, ServerToClientId.executingMeleeAttack);
+        Message message = Message.Create(MessageSendMode.unreliable, ServerToClientId.executingAttack);
         message.AddInt(fromPlayerId);
-        message.AddInt((int)type);
         message.AddVector2(direction);
         message.AddUShort(tick);
         NetworkManager.Singleton.Server.Send(message, clientId);

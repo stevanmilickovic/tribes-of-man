@@ -9,8 +9,8 @@ public static class MapUtil
 
     public static Chunk GetChunk(int x, int y)
     {
-        if (!MapManager.Singleton.chunks.ContainsKey(((int)Mathf.Floor((float)x / MapManager.CHUNK_SIZE), (int)Mathf.Floor((float)y / MapManager.CHUNK_SIZE)))) return null;
-        return MapManager.Singleton.chunks[((int)Mathf.Floor((float)x / MapManager.CHUNK_SIZE), (int)Mathf.Floor((float)y / MapManager.CHUNK_SIZE))];
+        if (!MapManager.Singleton.map.chunks.ContainsKey(((int)Mathf.Floor((float)x / MapConstants.CHUNK_SIZE), (int)Mathf.Floor((float)y / MapConstants.CHUNK_SIZE)))) return null;
+        return MapManager.Singleton.map.chunks[((int)Mathf.Floor((float)x / MapConstants.CHUNK_SIZE), (int)Mathf.Floor((float)y / MapConstants.CHUNK_SIZE))];
     }
 
     public static Chunk GetChunk(Vector2 position)
@@ -29,6 +29,15 @@ public static class MapUtil
     {
         return new ArraySegment<T>(array, offset, length)
                     .ToArray();
+    }
+
+    public static int GenerateChunkSeed(int seed, Chunk chunk)
+    {
+        int hash = 23;
+        hash = hash * 31 + seed;
+        hash = hash * 31 + chunk.x;
+        hash = hash * 31 + chunk.y;
+        return hash;
     }
 
 }

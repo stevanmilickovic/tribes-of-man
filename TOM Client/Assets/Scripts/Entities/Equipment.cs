@@ -12,7 +12,7 @@ public class Equipment : Inventory
     {
         foreach (ItemObject slot in slots)
         {
-            if (slot.item.type == Item.Type.Weapon) return slot;
+            if (slot != null && slot.item.type == Item.Type.Weapon) return slot;
         }
         return null;
     }

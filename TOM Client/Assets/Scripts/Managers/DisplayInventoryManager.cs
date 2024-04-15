@@ -366,7 +366,7 @@ public class DisplayInventoryManager : MonoBehaviour
         int tileY = (int)(mousePosition.y);
         Tile tile = null;
         if (tileX >= 0 && tileY >= 0)
-            tile = MapManager.Singleton.tiles[(tileX, tileY)];
+            tile = MapManager.Singleton.map.tiles[(tileX, tileY)];
 
         return tile;
     }

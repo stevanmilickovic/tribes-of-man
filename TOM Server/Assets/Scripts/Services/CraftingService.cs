@@ -30,7 +30,7 @@ public static class CraftingService
         if (!MapUtil.IsWithinRange(tileX, tileY, player.transform.position))
         {
             PlayerSend.SendInventoryMessage(player, clientId, tick);
-            MapSend.SendTileMessage(tile);
+            MapSend.SendTileMessageToPlayersInRange(tile);
             return;
         }
 
@@ -63,8 +63,8 @@ public static class CraftingService
         }
 
         if (droppedTile != null)
-            MapSend.SendTileMessage(droppedTile);
-        MapSend.SendTileMessage(tile);
+            MapSend.SendTileMessageToPlayersInRange(droppedTile);
+        MapSend.SendTileMessageToPlayersInRange(tile);
         PlayerSend.SendInventoryMessage(player, clientId, tick);
     }
 

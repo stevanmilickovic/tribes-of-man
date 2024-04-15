@@ -11,22 +11,22 @@ public enum ClientToServerId : ushort
     craft,
     moveItems,
     drop,
-    meleeAttack,
+    attack,
     build,
     eat
 }
 public enum ServerToClientId : ushort
 {
     sync = 1,
+    seed,
     spawnPlayer,
     yourPlayerId,
     playerPosition,
-    chunk,
     tile,
     playerInventory,
     playerEquipment,
-    chargingMeleeAttack,
-    executingMeleeAttack
+    chargingAttack,
+    executingAttack
 }
 public class NetworkManager : MonoBehaviour
 {

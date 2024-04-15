@@ -72,7 +72,6 @@ public static class MessageExtentions
         message.Add(tile.x);
         message.Add(tile.y);
 
-        message.Add((int)tile.type);
         AddItemObject(message, tile.itemObject);
         AddStructureObject(message, tile.structureObject);
 

@@ -30,11 +30,10 @@ public class Tile
         type = _type;
     }
 
-    public Tile(int _x, int _y, TerrainTypes _type, ItemObject _itemObject, StructureObject _structureObject)
+    public Tile(int _x, int _y, ItemObject _itemObject, StructureObject _structureObject)
     {
         x = _x;
         y = _y;
-        type = _type;
         itemObject = _itemObject;
         structureObject = _structureObject;
     }

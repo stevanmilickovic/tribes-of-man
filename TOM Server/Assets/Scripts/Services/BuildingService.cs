@@ -26,7 +26,7 @@ public static class BuildingService
         Structure structure = GetRecipe(itemObject, tile.structureObject);
         tile.DestroyStructure();
         tile.SpawnStructure(structure);
-        MapSend.SendTileMessage(tile);
+        MapSend.SendTileMessageToPlayersInRange(tile);
 
         return true;
     }

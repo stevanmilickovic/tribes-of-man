@@ -50,7 +50,7 @@ public class Player : MonoBehaviour
         if (isChargingAttack)
         {
             attack.remainingTicks--;
-            if (attack.remainingTicks == 0) ExecuteMeleeAttack();
+            if (attack.remainingTicks == 0) ExecuteAttack();
         }
     }
 
@@ -113,42 +113,59 @@ public class Player : MonoBehaviour
     public void StartMeleeAttack(MeleeAttackTypes type, Vector2 direction, ushort tick)
     {
         ItemObject weaponObject = tools.GetMainWeapon();
-        WeaponItem weapon = (WeaponItem)weaponObject.item;
+        MeleeWeaponItem weapon = (MeleeWeaponItem)weaponObject.item;
 
-        attack = new Attack(true, false, type, direction, CHARGE_TIME_IN_TICKS, weapon.dash);
+        attack = new Attack(weapon, direction, CHARGE_TIME_IN_TICKS);
         isChargingAttack = true;
+    }
+
+    public void ExecuteAttack()
+    {
+        isChargingAttack = false;
+
+        if (attack.item is MeleeWeaponItem)
+        {
+            ExecuteMeleeAttack();
+        }
+        else if (attack.item is RangedWeaponItem)
+        {
+            ExecuteRangedAttack();
+        }
+    }
+
+    public void ExecuteRangedAttack()
+    {
+        GameObject projectile = Instantiate(PlayerManager.Singleton.projectilePrefab);
+        projectile.transform.right = attack.direction;
+        Projectile projectileScript = projectile.GetComponent<Projectile>();
+        RangedWeaponItem item = (RangedWeaponItem)tools.GetMainWeapon().item;
+        projectileScript.ConfigureProjectile(10, item.damage, item.projectileSprite, gameObject);
     }
 
     public void ExecuteMeleeAttack()
     {
         Dash();
         PlayerAnimator playerAnimator = gameObject.GetComponent<PlayerAnimator>();
-        playerAnimator.ExecuteMeleeAttack(attack.meleeType, attack.direction);
+        playerAnimator.ExecuteMeleeAttack(((MeleeWeaponItem)attack.item).meleeAttackType, attack.direction);
     }
 
     private void Dash()
     {
-        transform.position = transform.position + new Vector3(attack.direction.x, attack.direction.y, 0) * attack.dash;
+        transform.position = transform.position + new Vector3(attack.direction.x, attack.direction.y, 0) * ((MeleeWeaponItem)attack.item).dash;
     }
 }
 
 public struct Attack
 {
 
-    public Attack(bool isMelee, bool isRanged, MeleeAttackTypes meleeType, Vector2 direction, int remainingTicks, float dash)
+    public Attack(Item item, Vector2 direction, int remainingTicks)
     {
-        this.isMelee = isMelee;
-        this.isRanged = isRanged;
-        this.meleeType = meleeType;
+        this.item = item;
         this.direction = direction;
         this.remainingTicks = remainingTicks;
-        this.dash = dash;
     }
 
-    public bool isMelee;
-    public bool isRanged;
-    public MeleeAttackTypes meleeType;
+    public Item item;
     public Vector2 direction;
     public int remainingTicks;
-    public float dash;
 }

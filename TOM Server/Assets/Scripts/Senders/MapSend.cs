@@ -6,40 +6,44 @@ using RiptideNetworking;
 public static class MapSend
 {
 
-    public static void SendRelevantChunks(Player player, ushort clientId)
+    public static void SendSeed(ushort clientId)
     {
-        Chunk chunk = player.currentChunk;
-
-        for (int x = -1; x <= 1; x++)
-        {
-            for (int y = -1; y <= 1; y++)
-            {
-                int chunkX = chunk.x + x;
-                int chunkY = chunk.y + y;
-                if (chunkX > -1 && chunkY > -1)
-                {
-                    SendChunkMessage(clientId, MapManager.Singleton.map.chunks[chunkX, chunkY]);
-                }
-            }
-        }
-    }
-
-    public static void SendAllChunks(ushort clientId, Map map)
-    {
-        foreach (Chunk chunk in map.chunks)
-        {
-            SendChunkMessage(clientId, chunk);
-        }
-    }
-
-    public static void SendChunkMessage(ushort clientId, Chunk chunk)
-    {
-        Message message = Message.Create(MessageSendMode.reliable, ServerToClientId.chunk);
-        MessageExtentions.Add(message, chunk);
+        Message message = Message.Create(MessageSendMode.reliable, ServerToClientId.seed);
+        message.AddInt(MapManager.Singleton.mapWidth);
+        message.AddInt(MapManager.Singleton.mapHeight);
+        message.AddInt(MapManager.Singleton.seed);
+        message.AddFloat(MapManager.Singleton.noiseScale);
+        message.AddInt(MapManager.Singleton.octaves);
+        message.AddFloat(MapManager.Singleton.persistence);
+        message.AddFloat(MapManager.Singleton.lacunarity);
+        message.AddVector2(MapManager.Singleton.offset);
         NetworkManager.Singleton.Server.Send(message, clientId);
     }
 
-    public static void SendTileMessage(Tile tile)
+    public static void SendObjectsInChunk(Chunk chunk, ushort clientId)
+    {
+        foreach (Tile tile in chunk.tiles)
+        {
+            if (tile.itemObject != null || tile.structureObject != null)
+            {
+                SendTileMessage(tile, clientId);
+            }
+        }
+        foreach (Player playerInChunk in chunk.players)
+        {
+            if (playerInChunk.currentClientId != clientId)
+                PlayerSend.SendSpawnPlayerMessage(playerInChunk, clientId);
+        }
+    }
+
+    public static void SendTileMessage(Tile tile, ushort clientId)
+    {
+        Message message = Message.Create(MessageSendMode.reliable, ServerToClientId.tile);
+        MessageExtentions.Add(message, tile);
+        NetworkManager.Singleton.Server.Send(message, clientId);
+    }
+
+    public static void SendTileMessageToPlayersInRange(Tile tile)
     {
         Message message = Message.Create(MessageSendMode.reliable, ServerToClientId.tile);
         MessageExtentions.Add(message, tile);

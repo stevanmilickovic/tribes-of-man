@@ -58,14 +58,13 @@ public class MapManager : MonoBehaviour
     [SerializeField] private GameObject largeStructureObjectPrefab;
     [SerializeField] private GameObject mediumStructureObjectPrefab;
     [SerializeField] private GameObject smallStructureObjectPrefab;
+    [SerializeField] private GameObject tileDetailPrefab;
     private Dictionary<(int, int), GameObject> spawnedItems;
-    private Dictionary<(int, int), GameObject> spawnedStructures; 
-    public Dictionary<(int, int), Chunk> chunks;
+    private Dictionary<(int, int), GameObject> spawnedStructures;
     public Dictionary<(int, int), GameObject> chunkObjects;
-    public Dictionary<(int, int), Tile> tiles;
+    public Dictionary<(int, int), GameObject> detailObjects;
 
-    public static int CHUNK_SIZE = 5;
-    public static int VIEW_RANGE = 3;
+    public Map map;
 
     private void Awake()
     {
@@ -74,56 +73,84 @@ public class MapManager : MonoBehaviour
 
     private void Start()
     {
-        chunks = new Dictionary<(int, int), Chunk>();
         chunkObjects = new Dictionary<(int, int), GameObject>();
-        tiles = new Dictionary<(int, int), Tile>();
         spawnedItems = new Dictionary<(int, int), GameObject>();
         spawnedStructures = new Dictionary<(int, int), GameObject>();
     }
 
-    public void CreateChunk(Chunk chunk)
+    public void GenerateMap(int mapWidth, int mapHeight, int seed, float noiseScale, int octaves, float persistence, float lacunarity, Vector2 offset)
     {
-        if (chunks.ContainsKey((chunk.x, chunk.y))) return;
+        map = new Map(mapWidth, mapHeight, Noise.GenerateNoiseMap(mapWidth, mapHeight, seed, noiseScale, octaves, persistence, lacunarity, offset));
+        map.seed = seed;
+    }
 
-        chunks.Add((chunk.x, chunk.y), chunk);
+    public void CreateAllVisibleChunks()
+    {
+        int currentX = (int)(PlayerManager.Singleton.myPlayer.transform.position.x / MapConstants.CHUNK_SIZE);
+        int currectY = (int)(PlayerManager.Singleton.myPlayer.transform.position.y / MapConstants.CHUNK_SIZE);
+
+        for (int x = -MapConstants.VIEW_RANGE; x <= MapConstants.VIEW_RANGE; x++)
+        {
+            for (int y = -MapConstants.VIEW_RANGE; y <= MapConstants.VIEW_RANGE; y++)
+            {
+                CreateChunk(currentX + x, currectY + y);
+            }
+        }
+    }
+
+    public void CreateChunk(int x, int y)
+    {
+        if (!map.chunks.ContainsKey((x, y))) return; // if out of bounds
+        Chunk chunk = map.chunks[(x, y)];
+
+        if (chunkObjects.ContainsKey((chunk.x, chunk.y))) return; // if already created
 
         GameObject newChunk = Instantiate(chunkPrefab);
-        newChunk.transform.Translate(chunk.x * CHUNK_SIZE, chunk.y * CHUNK_SIZE, 0f);
+        newChunk.transform.Translate(chunk.x * MapConstants.CHUNK_SIZE, chunk.y * MapConstants.CHUNK_SIZE, 0f);
         chunkObjects.Add((chunk.x, chunk.y), newChunk);
 
         DrawTiles(chunk, newChunk.GetComponent<MeshFilter>().mesh);
+        PopulateChunkWithDetails(chunk);
     }
 
-    public void UpdateRelevantChunks(Chunk oldChunk, Chunk newChunk)
+    public void UpdateVisibleChunks(Chunk oldChunk, Chunk newChunk)
     {
         int differenceX = oldChunk.x - newChunk.x;
         int differenceY = oldChunk.y - newChunk.y;
+        int rowToDelete = oldChunk.x + (differenceX < 0 ? -MapConstants.VIEW_RANGE : MapConstants.VIEW_RANGE);
+        int rowToUpdate = oldChunk.x + (differenceX > 0 ? -MapConstants.VIEW_RANGE : MapConstants.VIEW_RANGE);
+        int columnToDelete = oldChunk.y + (differenceY < 0 ? -MapConstants.VIEW_RANGE : MapConstants.VIEW_RANGE);
+        int columnoUpdate = oldChunk.y + (differenceY > 0 ? -MapConstants.VIEW_RANGE : MapConstants.VIEW_RANGE);
 
         if (differenceX != 0)
         {
-            for (int y = oldChunk.y - VIEW_RANGE; y <= oldChunk.y + VIEW_RANGE; y++)
+            for (int y = oldChunk.y - MapConstants.VIEW_RANGE; y <= oldChunk.y + MapConstants.VIEW_RANGE; y++)
             {
-                int rowToDelete = oldChunk.x + (differenceX < 0 ? -VIEW_RANGE : VIEW_RANGE);
-                if (chunks.ContainsKey((rowToDelete, y)))
+                if (chunkObjects.ContainsKey((rowToDelete, y)))
                 {
-                    DestroyEntitiesInChunk(chunks[(rowToDelete, y)]);
-                    chunks.Remove((rowToDelete, y));
+                    DestroyEntitiesInChunk(map.chunks[(rowToDelete, y)]);
                     Destroy(chunkObjects[(rowToDelete, y)]);
                     chunkObjects.Remove((rowToDelete, y));
+                }
+                if (!chunkObjects.ContainsKey((rowToUpdate, y)))
+                {
+                    CreateChunk(rowToUpdate, y);
                 }
             }
         }
         if (differenceY != 0)
         {
-            int columnToDelete = oldChunk.y + (differenceY < 0 ? -VIEW_RANGE : VIEW_RANGE);
-            for (int x = oldChunk.x - VIEW_RANGE; x <= oldChunk.x + VIEW_RANGE; x++)
+            for (int x = oldChunk.x - MapConstants.VIEW_RANGE; x <= oldChunk.x + MapConstants.VIEW_RANGE; x++)
             {
-                if (chunks.ContainsKey((x, columnToDelete)))
+                if (chunkObjects.ContainsKey((x, columnToDelete)))
                 {
-                    DestroyEntitiesInChunk(chunks[(x, columnToDelete)]);
-                    chunks.Remove((x, columnToDelete));
+                    if (x != rowToDelete) DestroyEntitiesInChunk(map.chunks[(x, columnToDelete)]);
                     Destroy(chunkObjects[(x, columnToDelete)]);
                     chunkObjects.Remove((x, columnToDelete));
+                }
+                if (!chunkObjects.ContainsKey((x, columnoUpdate)))
+                {
+                    CreateChunk(x, columnoUpdate);
                 }
             }
         }
@@ -146,6 +173,29 @@ public class MapManager : MonoBehaviour
             Destroy(spawnedStructure.Value);
             spawnedStructures.Remove(spawnedStructure.Key);
         }
+        foreach (KeyValuePair<(int, int), GameObject> spawnedDetail in chunk.spawnedDetails)
+        {
+            Destroy(spawnedDetail.Value);
+            spawnedStructures.Remove(spawnedDetail.Key);
+        }
+        chunk.players.Clear();
+    }
+
+    private void PopulateChunkWithDetails(Chunk chunk)
+    {
+        int chunkSeed = MapUtil.GenerateChunkSeed(map.seed, chunk);
+        System.Random random = new System.Random(chunkSeed);
+
+        foreach (Tile tile in chunk.tiles)
+        {
+            MapDetailsUtil.DetailSprite detail = MapDetailsUtil.GetRandomDetailSprite(tile.type, random);
+            if (detail != null)
+            {
+                GameObject newDetailObject = Instantiate(tileDetailPrefab, chunkObjects[(chunk.x, chunk.y)].transform);
+                newDetailObject.transform.position = new Vector2(tile.x + 0.5f, tile.y + 0.5f);
+                newDetailObject.GetComponent<SpriteRenderer>().sprite = detail.sprite;
+            }
+        }
     }
 
     private void DrawTiles(Chunk chunk, Mesh mesh)
@@ -156,9 +206,6 @@ public class MapManager : MonoBehaviour
         int vert = 0;
         int tris = 0;
         int cell = 0;
-
-
-        for (int y = 0; y < chunk.tiles.GetLength(1); y++) for (int x = 0; x < chunk.tiles.GetLength(0); x++) AddTileToDictionary(x, y, chunk);
 
         int i = 0;
         for (int y = 0; y < chunk.tiles.GetLength(1); y++)
@@ -178,13 +225,6 @@ public class MapManager : MonoBehaviour
 
                         Tile[] neighbourTiles = getNeighbourTiles(chunk.tiles[x, y]);
                         SetTextureUVs(uvs, chunk, cell, x, y, quadrant, neighbourTiles.SubArray(firstNeighbour, 3));
-
-                        foreach (Tile tile in neighbourTiles)
-                        {
-                            if (tile == null) continue;
-                            Chunk neighbourChunk = MapUtil.GetChunk(tile);
-                            if (neighbourChunk != null && neighbourChunk != chunk) UpdateTileUvs(tile);
-                        }
 
                         firstNeighbour += 3;
                         quadrant++;
@@ -229,12 +269,6 @@ public class MapManager : MonoBehaviour
             }
         }
         mesh.uv = uvs;
-    }
-
-    private void AddTileToDictionary(int x, int y, Chunk chunk)
-    {
-        if (tiles.ContainsKey((chunk.tiles[x, y].x, chunk.tiles[x, y].y))) return;
-        tiles.Add((chunk.tiles[x, y].x, chunk.tiles[x, y].y), chunk.tiles[x, y]);
     }
 
     private void SetVertices(Vector3[] vertices, int i, float x, float y)
@@ -415,21 +449,30 @@ public class MapManager : MonoBehaviour
     {
         Tile[] neighbourTiles = new Tile[12];
 
-        neighbourTiles[0] = tiles.ContainsKey((tile.x - 1, tile.y)) ? tiles[(tile.x - 1, tile.y)] : null;
-        neighbourTiles[1] = tiles.ContainsKey((tile.x - 1, tile.y - 1)) ? tiles[(tile.x - 1, tile.y - 1)] : null;
-        neighbourTiles[2] = tiles.ContainsKey((tile.x, tile.y - 1)) ? tiles[(tile.x, tile.y - 1)] : null;
+        var neighborOffsets = new (int x, int y)[]
+        {
+        (-1, 0),  // Left
+        (-1, -1), // Top-left
+        (0, -1),  // Top
+        (0, -1),  // Top (repeated)
+        (1, -1),  // Top-right
+        (1, 0),   // Right
+        (0, 1),   // Bottom
+        (-1, 1),  // Bottom-left
+        (-1, 0),  // Left (repeated)
+        (1, 0),   // Right (repeated)
+        (1, 1),   // Bottom-right
+        (0, 1)    // Bottom (repeated)
+        };
 
-        neighbourTiles[3] = tiles.ContainsKey((tile.x, tile.y - 1)) ? tiles[(tile.x, tile.y - 1)] : null;
-        neighbourTiles[4] = tiles.ContainsKey((tile.x + 1, tile.y - 1)) ? tiles[(tile.x + 1, tile.y - 1)] : null;
-        neighbourTiles[5] = tiles.ContainsKey((tile.x + 1, tile.y)) ? tiles[(tile.x + 1, tile.y)] : null;
+        for (int i = 0; i < neighborOffsets.Length; i++)
+        {
+            var (dx, dy) = neighborOffsets[i];
+            var key = (tile.x + dx, tile.y + dy);
 
-        neighbourTiles[6] = tiles.ContainsKey((tile.x, tile.y + 1)) ? tiles[(tile.x, tile.y + 1)] : null;
-        neighbourTiles[7] = tiles.ContainsKey((tile.x - 1, tile.y + 1)) ? tiles[(tile.x - 1, tile.y + 1)] : null;
-        neighbourTiles[8] = tiles.ContainsKey((tile.x - 1, tile.y)) ? tiles[(tile.x - 1, tile.y)] : null;
-
-        neighbourTiles[9] = tiles.ContainsKey((tile.x + 1, tile.y)) ? tiles[(tile.x + 1, tile.y)] : null;
-        neighbourTiles[10] = tiles.ContainsKey((tile.x + 1, tile.y + 1)) ? tiles[(tile.x + 1, tile.y + 1)] : null;
-        neighbourTiles[11] = tiles.ContainsKey((tile.x, tile.y + 1)) ? tiles[(tile.x, tile.y + 1)] : null;
+            // Use the tiles dictionary to find the neighbor; if not found, assign null
+            neighbourTiles[i] = map.tiles.ContainsKey(key) ? map.tiles[key] : null;
+        }
 
         return neighbourTiles;
     }
@@ -442,8 +485,8 @@ public class MapManager : MonoBehaviour
 
     public void UpdateTileItemObject(Tile tile)
     {
-        tiles[(tile.x, tile.y)].itemObject = tile.itemObject;
-        chunks[(tile.x / CHUNK_SIZE, tile.y / CHUNK_SIZE)].spawnedItems.Remove((tile.x, tile.y));
+        map.tiles[(tile.x, tile.y)].itemObject = tile.itemObject;
+        map.chunks[(tile.x / MapConstants.CHUNK_SIZE, tile.y / MapConstants.CHUNK_SIZE)].spawnedItems.Remove((tile.x, tile.y));
         if (spawnedItems.ContainsKey((tile.x, tile.y)))
         {
             Destroy(spawnedItems[(tile.x, tile.y)]);
@@ -451,7 +494,7 @@ public class MapManager : MonoBehaviour
 
         if(tile.itemObject != null)
         {
-            chunks[(tile.x / CHUNK_SIZE, tile.y / CHUNK_SIZE)].spawnedItems.Add((tile.x, tile.y), SpawnItem(tile.x, tile.y, tile.itemObject));
+            map.chunks[(tile.x / MapConstants.CHUNK_SIZE, tile.y / MapConstants.CHUNK_SIZE)].spawnedItems.Add((tile.x, tile.y), SpawnItem(tile.x, tile.y, tile.itemObject));
         }
     }
 
@@ -466,8 +509,8 @@ public class MapManager : MonoBehaviour
 
     public void UpdateTileStructureObject(Tile tile)
     {
-        tiles[(tile.x, tile.y)].structureObject = tile.structureObject;
-        chunks[(tile.x / CHUNK_SIZE, tile.y / CHUNK_SIZE)].spawnedStructures.Remove((tile.x, tile.y));
+        map.tiles[(tile.x, tile.y)].structureObject = tile.structureObject;
+        map.chunks[(tile.x / MapConstants.CHUNK_SIZE, tile.y / MapConstants.CHUNK_SIZE)].spawnedStructures.Remove((tile.x, tile.y));
 
         if (spawnedStructures.ContainsKey((tile.x, tile.y)))
         {
@@ -476,7 +519,7 @@ public class MapManager : MonoBehaviour
 
         if (tile.structureObject != null)
         {
-            chunks[(tile.x / CHUNK_SIZE, tile.y / CHUNK_SIZE)].spawnedStructures.Add((tile.x, tile.y), SpawnStructure(tile.x, tile.y, tile.structureObject));
+            map.chunks[(tile.x / MapConstants.CHUNK_SIZE, tile.y / MapConstants.CHUNK_SIZE)].spawnedStructures.Add((tile.x, tile.y), SpawnStructure(tile.x, tile.y, tile.structureObject));
         }
     }
 
@@ -506,7 +549,7 @@ public class MapManager : MonoBehaviour
 
     public Tile DropItem(int x, int y, ItemObject itemObject)
     {
-        Tile tile = tiles[(x, y)];
+        Tile tile = map.tiles[(x, y)];
 
         if (TryToDrop(tile, itemObject))
         {
@@ -517,8 +560,8 @@ public class MapManager : MonoBehaviour
         {
             for (int _x = x - 1; _x <= x + 1; _x++)
             {
-                if (TryToDrop(tiles[(x, y)], itemObject))
-                    return (tiles[(x, y)]);
+                if (TryToDrop(map.tiles[(x, y)], itemObject))
+                    return (map.tiles[(x, y)]);
             }
         }
 

@@ -14,11 +14,20 @@ static class PlayerUtil
         {
             if (slot != null && slot.item.type == Item.Type.Weapon)
             {
-                WeaponItem weapon = (WeaponItem)slot.item;
+                MeleeWeaponItem weapon = (MeleeWeaponItem)slot.item;
                 damage += weapon.damage;
             }
         }
 
         return damage;
+    }
+
+    public static Item GetMainWeapon(Player player)
+    {
+        foreach (ItemObject itemObject in player.tools.slots)
+        {
+            if (itemObject.item.type == Item.Type.Weapon) return itemObject.item;
+        }
+        return null;
     }
 }

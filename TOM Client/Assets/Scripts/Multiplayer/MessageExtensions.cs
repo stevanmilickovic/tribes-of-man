@@ -78,7 +78,7 @@ public static class MessageExtensions
 
     public static Tile GetTile(Message message)
     {
-        return new Tile(message.GetInt(), message.GetInt(), (Tile.TerrainTypes)message.GetInt(), GetItemObject(message), GetStructureObject(message));
+        return new Tile(message.GetInt(), message.GetInt(), GetItemObject(message), GetStructureObject(message));
     }
 
     public static ItemObject GetItemObject(Message message)

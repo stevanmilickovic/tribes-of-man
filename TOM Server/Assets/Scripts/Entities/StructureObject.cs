@@ -44,7 +44,7 @@ public class StructureObject : MonoBehaviour
             collapsed = health <= 0;
             if (health > structure.maxHealth) health = structure.maxHealth;
         }
-        MapSend.SendTileMessage(tile);
+        MapSend.SendTileMessageToPlayersInRange(tile);
     }
 
     public void TakeDamage(int damage)
@@ -77,6 +77,6 @@ public class StructureObject : MonoBehaviour
             }
         }
 
-        MapSend.SendTileMessage(tile);
+        MapSend.SendTileMessageToPlayersInRange(tile);
     }
 }

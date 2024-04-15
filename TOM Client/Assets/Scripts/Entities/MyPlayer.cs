@@ -29,17 +29,14 @@ public class MyPlayer : Player
         GetInputs();
         UpdateChunk();
 
-        //if (!PlayerController.Singleton.isChargingAttack) gameObject.transform.Translate(GetInputDirection(inputs) * Time.deltaTime * PLAYER_SPEED);
         float distanceToTarget = Vector2.Distance(transform.position, targetPosition);
         float speedToTarget = distanceToTarget / TICK_TIME;
-
         // Move the player towards the target position at the calculated speed
         transform.position = Vector3.MoveTowards(transform.position, targetPosition, speedToTarget * Time.deltaTime);
     }
 
     private void FixedUpdate()
     {
-        //if(!PlayerController.Singleton.isChargingAttack) gameObject.transform.Translate(GetInputDirection(inputs) * Time.fixedDeltaTime * PLAYER_SPEED);
         
         if (!PlayerController.Singleton.isChargingAttack)
         {
@@ -47,7 +44,7 @@ public class MyPlayer : Player
             targetPosition += new Vector2(movement.x, movement.y);
             states[NetworkManager.Singleton.ServerTick % BUFFER_SIZE] = new State(NetworkManager.Singleton.ServerTick, targetPosition, inputs);
         }
-        //states[NetworkManager.Singleton.ServerTick % BUFFER_SIZE] = new State(NetworkManager.Singleton.ServerTick, gameObject.transform.position, inputs);
+
         RefreshInputs();
     }
 
@@ -64,8 +61,6 @@ public class MyPlayer : Player
         if (positionError > 0.02f)
         {
 
-            Debug.Log($"Our position: {states[serverTick % BUFFER_SIZE].position}, server position {serverPosition}");
-
             states[serverTick % BUFFER_SIZE].position = serverPosition;
             targetCorrectedPosition = serverPosition;
 
@@ -79,7 +74,6 @@ public class MyPlayer : Player
             }
 
             targetPosition = targetCorrectedPosition;
-            //transform.position = targetCorrectedPosition;
         }
     }
 
@@ -139,12 +133,11 @@ public class MyPlayer : Player
 
     public void UpdateChunk()
     {
-        //Debug.Log($"Current Chunk is {currentChunk.x}, {currentChunk.y}");
         if (currentChunk != MapUtil.GetChunk(transform.position))
         {
             if (currentChunk != null)
             {
-                MapManager.Singleton.UpdateRelevantChunks(currentChunk, MapUtil.GetChunk(transform.position));
+                MapManager.Singleton.UpdateVisibleChunks(currentChunk, MapUtil.GetChunk(transform.position));
             }
             currentChunk = MapUtil.GetChunk(transform.position);
         }

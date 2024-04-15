@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using Random = System.Random;
+using System.Linq;
 
 public class Player : MonoBehaviour
 {
@@ -55,7 +56,7 @@ public class Player : MonoBehaviour
         if (isChargingAttack)
         {
             attack.remainingTicks--;
-            if (attack.remainingTicks == 0) ExecuteMeleeAttack(NetworkManager.Singleton.CurrentTick);
+            if (attack.remainingTicks == 0) ExecuteAttack(NetworkManager.Singleton.CurrentTick);
         }
     }
 
@@ -74,28 +75,62 @@ public class Player : MonoBehaviour
 
         inventory.Test();
         tools.Test();
-        CheckEquipment();
+        UpdateEquipmentStatus();
         UpdateChunk();
     }
 
-    public void ChargeMeleeAttack(Vector2 direction, ushort tick)
+    public void ChargeAttack(Vector2 direction, ushort tick)
+    {
+        Item weapon = tools.GetMainWeapon().item;
+
+        if (weapon is MeleeWeaponItem) ChargeMeleeAttack(direction, tick, weapon as MeleeWeaponItem);
+        else if (weapon is RangedWeaponItem) ChargeRangedAttack(direction, tick, weapon as RangedWeaponItem);
+    }
+
+    public void ChargeMeleeAttack(Vector2 direction, ushort tick, MeleeWeaponItem weapon)
     {
         if (isChargingAttack || equipmentType != EquipmentType.Armed) return;
 
-        ItemObject weaponObject = tools.GetMainWeapon();
-        WeaponItem weapon = (WeaponItem)weaponObject.item;
         MeleeAttackTypes type = weapon.meleeAttackType;
 
         pivot.transform.right = direction;
         isChargingAttack = true;
-        attack = new Attack(true, false, type, direction, CHARGE_TIME_IN_TICKS, weapon.dash);
+        attack = new Attack(weapon, direction, CHARGE_TIME_IN_TICKS);
 
         hit.gameObject.SetActive(true);
         hit.EnableAttackCollider(type); //Here we choose the attack collider type based on the weapon used
 
         foreach (Player player in currentChunk.playersInRange)
         {
-            PlayerSend.SendChargingMeleeAttackMessage(type, direction, id, player.currentClientId, tick);
+            PlayerSend.SendChargingAttackMessage(direction, id, player.currentClientId, tick);
+        }
+    }
+
+    public void ChargeRangedAttack(Vector2 direction, ushort tick, RangedWeaponItem weapon)
+    {
+        if (isChargingAttack || equipmentType != EquipmentType.Armed) return;
+
+        pivot.transform.right = direction;
+        isChargingAttack = true;
+        attack = new Attack(weapon, direction, CHARGE_TIME_IN_TICKS);
+
+        foreach (Player player in currentChunk.playersInRange)
+        {
+            PlayerSend.SendChargingAttackMessage(direction, id, player.currentClientId, tick);
+        }
+    }
+
+    public void ExecuteAttack(ushort tick)
+    {
+        isChargingAttack = false;
+
+        if (attack.item is MeleeWeaponItem)
+        {
+            ExecuteMeleeAttack(tick);
+        }
+        else if (attack.item is RangedWeaponItem)
+        {
+            ExecuteRangedAttack(tick);
         }
     }
 
@@ -104,15 +139,25 @@ public class Player : MonoBehaviour
         Dash();
         AttackObjects();
 
-        hit.DisableAttackCollider(attack.meleeType);
-        isChargingAttack = false;
+        hit.DisableAttackCollider(((MeleeWeaponItem)attack.item).meleeAttackType);
 
-        PlayerSend.SendExecutingMeleeAttackMessage(attack.meleeType, attack.direction, id, currentClientId, tick);
+        PlayerSend.SendExecutingAttackMessage(attack.direction, id, currentClientId, tick);
+    }
+
+    public void ExecuteRangedAttack(ushort tick)
+    {
+        GameObject projectile = Instantiate(PlayerManager.Singleton.projectilePrefab);
+        projectile.transform.right = attack.direction;
+        Projectile projectileScript = projectile.GetComponent<Projectile>();
+        RangedWeaponItem item = (RangedWeaponItem)tools.GetMainWeapon().item;
+        projectileScript.ConfigureProjectile(10, item.damage, gameObject);
+
+        PlayerSend.SendExecutingAttackMessage(attack.direction, id, currentClientId, tick);
     }
 
     private void Dash()
     {
-        transform.position = transform.position + new Vector3(attack.direction.x, attack.direction.y, 0) * attack.dash;
+        transform.position = transform.position + new Vector3(attack.direction.x, attack.direction.y, 0) * ((MeleeWeaponItem)attack.item).dash;
     }
 
     private void AttackObjects()
@@ -122,7 +167,7 @@ public class Player : MonoBehaviour
 
         foreach (Collider2D playerCollider in hitPlayerColliders.ToArray())
         {
-            playerCollider.gameObject.GetComponent<Player>().ReceiveMeleeAttack(attack.meleeType);
+            playerCollider.gameObject.GetComponent<Player>().ReceiveMeleeAttack();
         }
         foreach (Collider2D structureCollider in hitStructureColliders.ToArray())
         {
@@ -142,19 +187,12 @@ public class Player : MonoBehaviour
         }
     }
 
-    public void ReceiveMeleeAttack(MeleeAttackTypes type)
+    public void ReceiveMeleeAttack()
     {
-        if (isChargingAttack && attack.meleeType == type)
-        {
-            //Deflect attack
-            isChargingAttack = false;
-        } else
-        {
-            Die();
-        }
+        Die();
     }
 
-    public void CheckEquipment()
+    public void UpdateEquipmentStatus()
     {
         equipmentType = EquipmentType.Unarmed;
         foreach (ItemObject slot in tools.slots)
@@ -175,24 +213,22 @@ public class Player : MonoBehaviour
     {
         if (currentChunk != MapUtil.GetChunk(transform.position))
         {
-
-            if (currentChunk != null)
-            {
+            if (currentChunk != null) 
                 currentChunk.RemovePlayer(this);
-            }
-            foreach (Chunk chunk in chunksInRange)
-            {
-                chunk.playersInRange.Remove(this);
-            }
-            chunksInRange = new List<Chunk>();
 
+            List<Chunk> previousChunks = new List<Chunk>(chunksInRange);
+
+            chunksInRange.Clear();
             currentChunk = MapUtil.GetChunk(transform.position);
             currentChunk.AddPlayer(this);
             UpdateChunksInRange();
 
-            PlayerSend.SendBasicRelevantInformation(this, currentClientId);
+            foreach (Chunk newChunk in chunksInRange.Except(previousChunks).ToList())
+            {
+                MapSend.SendObjectsInChunk(newChunk, currentClientId);
+            }
         }
-        PlayerSend.SendRelevantPlayerPosition(this, currentClientId);
+        PlayerSend.SendPositionOfPlayersInRange(this, currentClientId);
     }
 
     private void UpdateChunksInRange()
@@ -225,20 +261,14 @@ public class Player : MonoBehaviour
 
 public struct Attack {
 
-    public Attack(bool isMelee, bool isRanged, MeleeAttackTypes meleeType, Vector2 direction, int remainingTicks, float dash)
+    public Attack(Item item, Vector2 direction, int remainingTicks)
     {
-        this.isMelee = isMelee;
-        this.isRanged = isRanged;
-        this.meleeType = meleeType;
+        this.item = item;
         this.direction = direction;
         this.remainingTicks = remainingTicks;
-        this.dash = dash;
     }
 
-    public bool isMelee;
-    public bool isRanged;
-    public MeleeAttackTypes meleeType;
+    public Item item;
     public Vector2 direction;
     public int remainingTicks;
-    public float dash;
 }
